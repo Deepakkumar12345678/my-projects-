@@ -1,131 +1,447 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Prank Login — Demo</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Dark King — Private Love Space</title>
+<link rel="icon" href="data:;base64,iVBORw0KGgo=">
 <style>
-    body{
-        margin:0;
-        padding:0;
-        background:#fafafa;
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        height:100vh;
-        font-family:'Segoe UI',sans-serif;
-    }
-    .container{
-        background:#fff;
-        width:90%;
-        max-width:360px;
-        padding:40px 30px;
-        border:1px solid #ddd;
-        border-radius:12px;
-        box-shadow:0 8px 18px rgba(0,0,0,0.08);
-        text-align:center;
-    }
-    .title{
-        font-size:32px;
-        font-weight:700;
-        margin-bottom:20px;
-        background:linear-gradient(45deg,#ff0077,#ff8a00);
-        -webkit-background-clip:text;
-        color:transparent;
-    }
-    .warning{
-        background:#fff3cd;
-        border:1px solid #ffe7a3;
-        padding:8px;
-        font-size:13px;
-        border-radius:6px;
-        margin-bottom:15px;
-    }
-    input{
-        width:100%;
-        margin-top:10px;
-        padding:12px;
-        border-radius:8px;
-        border:1px solid #ccc;
-        outline:none;
-        font-size:15px;
-        background:#fafafa;
-    }
-    input:focus{
-        border-color:#ff6a00;
-        box-shadow:0 0 4px rgba(255,94,0,0.3);
-    }
-    .btn{
-        width:100%;
-        margin-top:15px;
-        padding:12px;
-        font-size:16px;
-        border:none;
-        border-radius:8px;
-        background:#ff6a00;
-        color:#fff;
-        font-weight:600;
-        cursor:pointer;
-    }
-    .gotcha{
-        display:none;
-        margin-top:15px;
-        background:#d4f7d4;
-        border:1px solid #9fe7a3;
-        padding:10px;
-        border-radius:8px;
-        color:#0f6d1a;
-        animation:fade 0.5s forwards;
-    }
-    @keyframes fade{
-        from{opacity:0; transform:scale(0.9);}
-        to{opacity:1; transform:scale(1);}
-    }
-    .footer{
-        margin-top:15px;
-        font-size:12px;
-        color:#777;
-    }
-    .demo-badge{
-        margin-bottom:10px;
-        display:inline-block;
-        padding:4px 10px;
-        background:#ff0033;
-        color:#fff;
-        font-weight:700;
-        border-radius:15px;
-        font-size:12px;
-    }
+  /* ---------- BASE ---------- */
+  :root{
+    --bg:#050408;
+    --card: rgba(255,255,255,0.04);
+    --glass: rgba(255,255,255,0.06);
+    --accent:#ff0055;
+    --accent-2:#ff77aa;
+    --muted:rgba(255,255,255,0.55);
+    --radius:16px;
+    --maxw:1100px;
+    --gap:18px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+    background: linear-gradient(180deg,#000 0%, #07050a 100%);
+    color:#fff;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    overflow-y: auto;
+    min-height:100vh;
+  }
+  a{color:inherit}
+
+  /* ---------- LOCK SCREEN ---------- */
+  #lockScreen{
+    position:fixed; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(180deg, rgba(0,0,0,0.85), rgba(0,0,0,0.95));
+    z-index:9999; padding:24px;
+  }
+  .lockCard{
+    width:100%; max-width:420px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+    border-radius:18px; padding:26px;
+    border:1px solid rgba(255,255,255,0.06);
+    text-align:center; box-shadow: 0 10px 40px rgba(255,0,80,0.06);
+    backdrop-filter: blur(6px);
+  }
+  .lockCard h1{ margin:0 0 8px; font-size:24px; color:var(--accent); text-shadow:0 6px 20px rgba(255,0,80,0.08); }
+  .lockCard p{ margin:0 0 18px; color:var(--muted); font-size:14px; }
+  #passInput{
+    width:100%; padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,0.06);
+    background:transparent; color:#fff; font-size:16px; outline:none;
+  }
+  #unlockBtn{
+    margin-top:14px; padding:10px 22px; border-radius:12px; border:none;
+    background: linear-gradient(90deg,var(--accent), #ff2b78);
+    color:white; font-weight:600; cursor:pointer; font-size:16px;
+    box-shadow: 0 10px 30px rgba(255,0,80,0.12);
+  }
+
+  /* ---------- HEART BACKGROUND ---------- */
+  .heart-bg{
+    position:fixed; z-index:1;
+    top:50%; left:50%; transform:translate(-50%,-50%);
+    width:420px; height:420px;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    border-radius:50% 50% 40% 40% / 60% 60% 40% 40%;
+    box-shadow: 0 0 120px rgba(255,0,80,0.06), inset 0 0 40px rgba(255,255,255,0.02);
+    pointer-events:none;
+    transition: transform 250ms ease, box-shadow 250ms ease;
+    filter: drop-shadow(0 10px 30px rgba(255,0,80,0.05));
+    mix-blend-mode: screen;
+    animation: heartbeat 2.2s infinite ease-in-out;
+  }
+  @keyframes heartbeat{
+    0%{ transform:translate(-50%,-50%) scale(1); }
+    20%{ transform:translate(-50%,-50%) scale(1.06); }
+    40%{ transform:translate(-50%,-50%) scale(1); }
+    60%{ transform:translate(-50%,-50%) scale(1.05); }
+    100%{ transform:translate(-50%,-50%) scale(1); }
+  }
+
+  /* ---------- PAGE LAYOUT ---------- */
+  .page{
+    position:relative; z-index:10; max-width:var(--maxw); margin:0 auto; padding:48px 20px 140px;
+  }
+  .logo{
+    text-align:center; font-size:56px; letter-spacing:6px; font-weight:900;
+    color:var(--accent); margin-top:60px; margin-bottom:28px;
+    text-shadow: 0 20px 50px rgba(255,0,80,0.08);
+  }
+
+  .grid{
+    display:grid; grid-template-columns: 1fr 1fr; gap:var(--gap);
+  }
+  /* single column on small screens */
+  @media (max-width:820px){ .grid{ grid-template-columns: 1fr; } .logo{ font-size:40px; } 
+    .heart-bg{ width:260px; height:260px; } .page{ padding-top:36px; }
+  }
+
+  /* ---------- SECTION CARD ---------- */
+  .card{
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-radius:calc(var(--radius) - 4px);
+    padding:18px; border:1px solid rgba(255,255,255,0.04);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+    position:relative; overflow:hidden;
+  }
+  .card .title{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:8px;
+  }
+  .card h3{ margin:0; font-size:18px; color:var(--accent-2); letter-spacing:0.2px; }
+  .mini-btn{
+    background:transparent; border:1px solid rgba(255,255,255,0.06); padding:8px 12px; border-radius:10px;
+    color:#fff; cursor:pointer; font-weight:600;
+  }
+
+  .content{
+    max-height:0; overflow:hidden; transition: max-height 340ms ease, padding 340ms ease;
+    padding-top:0;
+  }
+  .content.open{ max-height:600px; padding-top:10px; }
+
+  textarea.input{
+    width:100%; min-height:120px; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.03);
+    background:rgba(0,0,0,0.35); color:#fff; resize:vertical; font-size:15px;
+  }
+  .post-row{ display:flex; gap:10px; margin-top:10px; align-items:center; }
+  .post-row button.post{
+    flex:0 0 auto; background:var(--accent); border:none; color:#fff; padding:10px 14px; border-radius:10px; cursor:pointer;
+    box-shadow: 0 6px 20px rgba(255,0,80,0.08);
+  }
+  .list{ margin-top:12px; display:flex; flex-direction:column; gap:10px; max-height:260px; overflow:auto; padding-right:8px; }
+  .msg{
+    background: linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0.01));
+    padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.03); font-size:14px;
+  }
+  .msg.admin{ border-left:4px solid var(--accent); }
+  .msg.user{ border-left:4px solid #1fa2ff; }
+
+  /* assistant box */
+  .assistant-box{
+    margin-top:10px; padding:12px; border-radius:12px; background: linear-gradient(90deg, rgba(255,0,90,0.04), rgba(255,255,255,0.02));
+    border:1px solid rgba(255,255,255,0.04); color:#ffd7e6; display:none;
+  }
+  .assistant-controls{ display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap; }
+
+  /* footer small */
+  .foot{ text-align:center; margin-top:28px; color:var(--muted); font-size:13px; }
+
+  /* tiny responsiveness */
+  @media (max-width:420px){
+    .logo{ font-size:32px; letter-spacing:3px; }
+    .card{ padding:14px; }
+    textarea.input{ min-height:100px; }
+  }
+
 </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="demo-badge">PRANK DEMO</div>
-    <div class="title">SnapGram</div>
-
-    <div class="warning">⚠ यह सिर्फ़ प्रैंक/डेमो है • कोई भी डेटा सेव नहीं होगा।</div>
-
-    <input type="text" id="user" placeholder="फोन, ईमेल या यूज़रनेम">
-    <input type="password" id="pass" placeholder="पासवर्ड">
-    <button class="btn" onclick="prank()">लॉग इन</button>
-
-    <div class="gotcha" id="msg">
-        🎉 Gotcha! यह सिर्फ़ प्रैंक था — कोई भी डेटा सेव नहीं हुआ!
+<!-- LOCK SCREEN -->
+<div id="lockScreen" aria-hidden="false">
+  <div class="lockCard" role="dialog" aria-label="Unlock Private Space">
+    <h1>DARK KING</h1>
+    <p style="color:var(--muted)">यह निजी स्थान केवल तुम्हारे लिए। पासवर्ड डालकर प्रवेश करें।</p>
+    <input id="passInput" type="password" placeholder="पासवर्ड डालें (उदा. 143)" />
+    <div style="display:flex; gap:10px; justify-content:center; margin-top:12px;">
+      <button id="unlockBtn">Unlock</button>
+      <button id="hintBtn" class="mini-btn">Hint</button>
     </div>
-
-    <div class="footer">यह किसी भी वास्तविक ऐप की कॉपी नहीं है।</div>
+    <p id="lockMsg" style="margin-top:10px; color:var(--muted); font-size:13px;"></p>
+  </div>
 </div>
 
-<script>
-function prank(){
-    document.getElementById("user").value="";
-    document.getElementById("pass").value="";
-    let m=document.getElementById("msg");
-    m.style.display="block";
-    setTimeout(()=>m.style.display="none",3500);
-}
-</script>
+<!-- HEART BACKGROUND (glass/mirror) -->
+<div class="heart-bg" id="heart"></div>
 
+<!-- MAIN PAGE -->
+<main class="page" id="mainContent" aria-hidden="true" style="display:none;">
+  <div class="logo">DARK KING</div>
+
+  <div class="grid">
+    <!-- Admin -->
+    <div class="card">
+      <div class="title">
+        <h3>Admin Message</h3>
+        <div>
+          <button class="mini-btn" data-target="adminContent">Open</button>
+        </div>
+      </div>
+      <div id="adminContent" class="content">
+        <textarea id="adminInput" class="input" placeholder="Admin के लिए संदेश लिखें..."></textarea>
+        <div class="post-row">
+          <button class="post" id="postAdmin">Post</button>
+          <div style="flex:1"></div>
+          <button class="mini-btn" id="adminClear">Clear</button>
+        </div>
+        <div class="list" id="adminList"></div>
+      </div>
+    </div>
+
+    <!-- User -->
+    <div class="card">
+      <div class="title">
+        <h3>User Message</h3>
+        <div>
+          <button class="mini-btn" data-target="userContent">Open</button>
+        </div>
+      </div>
+      <div id="userContent" class="content">
+        <textarea id="userInput" class="input" placeholder="User अपनी बात यहाँ लिखे..."></textarea>
+        <div class="post-row">
+          <button class="post" id="postUser">Send</button>
+          <div style="flex:1"></div>
+          <button class="mini-btn" id="userClear">Clear</button>
+        </div>
+        <div class="list" id="userList"></div>
+      </div>
+    </div>
+
+    <!-- Pages / Media -->
+    <div class="card" style="grid-column: 1 / -1;">
+      <div class="title">
+        <h3>Pages & Media</h3>
+        <div>
+          <button class="mini-btn" data-target="pageContent">Open</button>
+        </div>
+      </div>
+      <div id="pageContent" class="content">
+        <p style="color:var(--muted); margin:0 0 8px;">यहाँ आप फोटो/वीडियो के लिंक, यादें और नोट्स रख सकते हैं।</p>
+        <input id="mediaInput" class="input" placeholder="Link या छोटा नोट डालें..." style="height:48px;" />
+        <div class="post-row">
+          <button class="post" id="addMedia">Add</button>
+          <div style="flex:1"></div>
+          <button class="mini-btn" id="clearMedia">Clear</button>
+        </div>
+        <div class="list" id="mediaList"></div>
+
+        <!-- AI Guide inside pages -->
+        <div style="margin-top:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong style="color:var(--accent-2)">AI Guide — Female Voice</strong>
+            <div style="display:flex; gap:10px;">
+              <button class="mini-btn" id="showAssist">Show</button>
+              <button class="mini-btn" id="speakAssist">Play</button>
+            </div>
+          </div>
+
+          <div class="assistant-box" id="assistantBox" aria-live="polite">
+            मैं तुम्हारी निजी मदद करने वाली assistant हूँ। नीचे के बटन दबाकर मैं बताऊँगी कि हर सेक्शन किस लिए है, कैसे उपयोग करें और तुम सुरक्षित कैसे रहो।
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div class="foot">© Dark King • यह निजी पेज सिर्फ़ आपके और आपकी प्रिय के लिए।</div>
+</main>
+
+<script>
+/* =========================
+   Configuration
+   - CHANGE password below if needed
+   ========================= */
+const PASSWORDS = ['DTYPL5133']; // acceptable passwords
+
+/* ---------- LOCK LOGIC ---------- */
+const lockScreen = document.getElementById('lockScreen');
+const mainContent = document.getElementById('mainContent');
+const passInput = document.getElementById('passInput');
+const unlockBtn = document.getElementById('unlockBtn');
+const hintBtn = document.getElementById('hintBtn');
+const lockMsg = document.getElementById('lockMsg');
+
+unlockBtn.addEventListener('click', tryUnlock);
+passInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') tryUnlock(); });
+
+hintBtn.addEventListener('click', ()=> {
+  lockMsg.textContent = 'Hint: छोटा तीन अंकों का प्यार-code (उदा. 143)।'; 
+});
+
+function tryUnlock(){
+  const val = (passInput.value||'').trim();
+  if(PASSWORDS.includes(val)){
+    lockScreen.style.display = 'none';
+    mainContent.style.display = 'block';
+    mainContent.setAttribute('aria-hidden','false');
+    speakIntro();
+  } else {
+    lockMsg.textContent = 'गलत पासवर्ड — फिर कोशिश करो।';
+    // brief shake effect
+    lockScreen.animate([{transform:'translateY(0)'},{transform:'translateY(-8px)'},{transform:'translateY(0)'}], {duration:300});
+    speakText('गलत पासवर्ड. दुबारा प्रयास करें।');
+  }
+}
+
+/* ---------- HEART INTERACTION ---------- */
+const heart = document.getElementById('heart');
+let heartRect = null;
+function smallReact(){
+  heart.style.transform = 'translate(-50%,-50%) scale(1.08)';
+  setTimeout(()=> heart.style.transform = '', 300);
+}
+document.addEventListener('click', (e)=>{
+  // small nudge on click
+  smallReact();
+});
+// track pointer and slightly move heart (parallax)
+document.addEventListener('mousemove', (e)=>{
+  const x = (e.clientX/window.innerWidth - 0.5) * 24; // -12..12
+  const y = (e.clientY/window.innerHeight - 0.5) * 18;
+  heart.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(1)`;
+});
+document.addEventListener('touchmove', (e)=>{
+  const t = e.touches[0];
+  const x = (t.clientX/window.innerWidth - 0.5) * 20;
+  const y = (t.clientY/window.innerHeight - 0.5) * 16;
+  heart.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(1)`;
+});
+document.addEventListener('touchend', ()=>{ heart.style.transform='translate(-50%,-50%) scale(1)'; });
+
+/* ---------- OPEN/CLOSE SECTIONS ---------- */
+document.querySelectorAll('.mini-btn[data-target]').forEach(btn=>{
+  btn.addEventListener('click', (ev)=>{
+    const id = btn.getAttribute('data-target');
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.classList.toggle('open');
+    // ensure heart reacts
+    smallReact();
+    // scroll into view on open (mobile-friendly)
+    if(el.classList.contains('open')) setTimeout(()=> el.scrollIntoView({behavior:'smooth', block:'center'}), 260);
+  });
+});
+
+/* ---------- POSTING / LIST MANAGEMENT ---------- */
+function mkNode(text,cls){
+  const d = document.createElement('div');
+  d.className = 'msg ' + cls;
+  d.textContent = text;
+  return d;
+}
+
+/* Admin */
+const postAdmin = document.getElementById('postAdmin');
+const adminInput = document.getElementById('adminInput');
+const adminList = document.getElementById('adminList');
+postAdmin.addEventListener('click', ()=>{
+  const v = adminInput.value.trim(); if(!v) return;
+  adminList.prepend(mkNode(v, 'admin'));
+  adminInput.value=''; speakText('Admin का संदेश सेव हो गया।');
+});
+document.getElementById('adminClear').addEventListener('click', ()=>{ adminInput.value=''; });
+
+/* User */
+const postUser = document.getElementById('postUser');
+const userInput = document.getElementById('userInput');
+const userList = document.getElementById('userList');
+postUser.addEventListener('click', ()=>{
+  const v = userInput.value.trim(); if(!v) return;
+  userList.prepend(mkNode(v, 'user'));
+  userInput.value=''; speakText('संदेश भेजा गया।');
+});
+document.getElementById('userClear').addEventListener('click', ()=>{ userInput.value=''; });
+
+/* Media */
+const addMedia = document.getElementById('addMedia');
+const mediaInput = document.getElementById('mediaInput');
+const mediaList = document.getElementById('mediaList');
+addMedia.addEventListener('click', ()=>{
+  const v = mediaInput.value.trim(); if(!v) return;
+  // if it's a URL to image or video, create link; else plain text
+  const node = document.createElement('div'); node.className='msg';
+  if(v.match(/^https?:\\/\\/.*\\.(jpg|jpeg|png|gif)$/i)){
+    const img = document.createElement('img'); img.src=v; img.style.maxWidth='100%'; img.style.borderRadius='10px';
+    node.appendChild(img);
+  } else if(v.match(/^https?:\\/\\/.*/i)){
+    const a = document.createElement('a'); a.href=v; a.textContent=v; a.target='_blank'; a.rel='noopener';
+    node.appendChild(a);
+  } else {
+    node.textContent = v;
+  }
+  mediaList.prepend(node);
+  mediaInput.value=''; speakText('नया मीडिया आइटम जोड़ दिया गया।');
+});
+document.getElementById('clearMedia').addEventListener('click', ()=>{ mediaInput.value=''; });
+
+/* ---------- ASSISTANT (VOICE + BOX) ---------- */
+const assistantBox = document.getElementById('assistantBox');
+document.getElementById('showAssist').addEventListener('click', ()=>{
+  assistantBox.style.display = assistantBox.style.display === 'block' ? 'none' : 'block';
+  assistantBox.style.opacity = 1;
+});
+document.getElementById('speakAssist').addEventListener('click', ()=> speakIntro());
+
+function speakIntro(){
+  const text = `नमस्ते… मैं तुम्हारी निजी सहायता करने वाली assistant हूँ। यह जगह सिर्फ तुम्हारे और तुम्हारी प्रिय के लिए सुरक्षित है।
+  सबसे ऊपर DARK KING का लोगो तुम्हारी पहचान है।
+  Admin Message सेक्शन में तुम अपने दिल के शब्द लिख सकते हो, और User Message सेक्शन में वह लड़की अपनी बात लिख सकती है।
+  Pages & Media सेक्शन में तुम यादें, फोटो और वीडियो का लिंक रख सकते हो।
+  हर सेक्शन को Open या Close कर सकते हो। यह सुरक्षित और private जगह है — यहाँ तुम बेख़ौफ़ अपनी भावनाएँ लिख सकते हो।`;
+  assistantBox.style.display = 'block';
+  speakText(text);
+}
+
+/* Speak util - female/matching Hindi voice preference */
+function speakText(text){
+  if(!('speechSynthesis' in window)) return;
+  // Cancel any current
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'hi-IN';
+  u.rate = 1;
+  u.pitch = 1.05;
+  // choose a Hindi / female voice if available
+  const vs = speechSynthesis.getVoices();
+  // try to pick best candidate
+  for(const v of vs){
+    const n = (v.name || '').toLowerCase();
+    if(v.lang && v.lang.toLowerCase().startsWith('hi')){ u.voice = v; break; }
+    if(n.includes('hindi') || n.includes('female') || n.includes('google')){ u.voice = v; break; }
+  }
+  // fallback: any voice
+  speechSynthesis.speak(u);
+}
+
+/* set a small welcome on page load (not spoken until unlock) */
+window.addEventListener('load', ()=>{
+  // warm up voices (some browsers need speakSynthesis.getVoices() to be called)
+  if(speechSynthesis && speechSynthesis.getVoices().length === 0){
+    speechSynthesis.onvoiceschanged = ()=>{ /* no-op */ };
+  }
+});
+
+/* accessibility: focus first input on lock */
+passInput.focus();
+
+</script>
 </body>
 </html>
