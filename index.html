@@ -1,60 +1,131 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Project Website</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f0f0f0;
-        }
-        header {
-            background: #111;
-            padding: 20px;
-            text-align: center;
-            color: white;
-            font-size: 26px;
-        }
-        section {
-            padding: 20px;
-            text-align: center;
-        }
-        .card {
-            background: white;
-            width: 90%;
-            max-width: 400px;
-            margin: 20px auto;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
-        footer {
-            background: #111;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            margin-top: 30px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prank Login — Demo</title>
+<style>
+    body{
+        margin:0;
+        padding:0;
+        background:#fafafa;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        height:100vh;
+        font-family:'Segoe UI',sans-serif;
+    }
+    .container{
+        background:#fff;
+        width:90%;
+        max-width:360px;
+        padding:40px 30px;
+        border:1px solid #ddd;
+        border-radius:12px;
+        box-shadow:0 8px 18px rgba(0,0,0,0.08);
+        text-align:center;
+    }
+    .title{
+        font-size:32px;
+        font-weight:700;
+        margin-bottom:20px;
+        background:linear-gradient(45deg,#ff0077,#ff8a00);
+        -webkit-background-clip:text;
+        color:transparent;
+    }
+    .warning{
+        background:#fff3cd;
+        border:1px solid #ffe7a3;
+        padding:8px;
+        font-size:13px;
+        border-radius:6px;
+        margin-bottom:15px;
+    }
+    input{
+        width:100%;
+        margin-top:10px;
+        padding:12px;
+        border-radius:8px;
+        border:1px solid #ccc;
+        outline:none;
+        font-size:15px;
+        background:#fafafa;
+    }
+    input:focus{
+        border-color:#ff6a00;
+        box-shadow:0 0 4px rgba(255,94,0,0.3);
+    }
+    .btn{
+        width:100%;
+        margin-top:15px;
+        padding:12px;
+        font-size:16px;
+        border:none;
+        border-radius:8px;
+        background:#ff6a00;
+        color:#fff;
+        font-weight:600;
+        cursor:pointer;
+    }
+    .gotcha{
+        display:none;
+        margin-top:15px;
+        background:#d4f7d4;
+        border:1px solid #9fe7a3;
+        padding:10px;
+        border-radius:8px;
+        color:#0f6d1a;
+        animation:fade 0.5s forwards;
+    }
+    @keyframes fade{
+        from{opacity:0; transform:scale(0.9);}
+        to{opacity:1; transform:scale(1);}
+    }
+    .footer{
+        margin-top:15px;
+        font-size:12px;
+        color:#777;
+    }
+    .demo-badge{
+        margin-bottom:10px;
+        display:inline-block;
+        padding:4px 10px;
+        background:#ff0033;
+        color:#fff;
+        font-weight:700;
+        border-radius:15px;
+        font-size:12px;
+    }
+</style>
 </head>
 <body>
 
-<header>
-    Welcome to My Project Website
-</header>
+<div class="container">
+    <div class="demo-badge">PRANK DEMO</div>
+    <div class="title">SnapGram</div>
 
-<section>
-    <div class="card">
-        <h2>नमस्ते!</h2>
-        <p>यह आपकी प्रोजेक्ट वेबसाइट है। आप इसे अपनी इच्छा अनुसार बदल सकते हैं।</p>
+    <div class="warning">⚠ यह सिर्फ़ प्रैंक/डेमो है • कोई भी डेटा सेव नहीं होगा।</div>
+
+    <input type="text" id="user" placeholder="फोन, ईमेल या यूज़रनेम">
+    <input type="password" id="pass" placeholder="पासवर्ड">
+    <button class="btn" onclick="prank()">लॉग इन</button>
+
+    <div class="gotcha" id="msg">
+        🎉 Gotcha! यह सिर्फ़ प्रैंक था — कोई भी डेटा सेव नहीं हुआ!
     </div>
-</section>
 
-<footer>
-    © 2025 My Project | GitHub Pages
-</footer>
+    <div class="footer">यह किसी भी वास्तविक ऐप की कॉपी नहीं है।</div>
+</div>
+
+<script>
+function prank(){
+    document.getElementById("user").value="";
+    document.getElementById("pass").value="";
+    let m=document.getElementById("msg");
+    m.style.display="block";
+    setTimeout(()=>m.style.display="none",3500);
+}
+</script>
 
 </body>
 </html>
