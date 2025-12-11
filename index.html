@@ -1,447 +1,2357 @@
-<!DOCTYPE html>
-<html lang="hi">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Dark King — Private Love Space</title>
-<link rel="icon" href="data:;base64,iVBORw0KGgo=">
-<style>
-  /* ---------- BASE ---------- */
-  :root{
-    --bg:#050408;
-    --card: rgba(255,255,255,0.04);
-    --glass: rgba(255,255,255,0.06);
-    --accent:#ff0055;
-    --accent-2:#ff77aa;
-    --muted:rgba(255,255,255,0.55);
-    --radius:16px;
-    --maxw:1100px;
-    --gap:18px;
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
-    background: linear-gradient(180deg,#000 0%, #07050a 100%);
-    color:#fff;
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-    overflow-y: auto;
-    min-height:100vh;
-  }
-  a{color:inherit}
-
-  /* ---------- LOCK SCREEN ---------- */
-  #lockScreen{
-    position:fixed; inset:0;
-    display:flex; align-items:center; justify-content:center;
-    background:linear-gradient(180deg, rgba(0,0,0,0.85), rgba(0,0,0,0.95));
-    z-index:9999; padding:24px;
-  }
-  .lockCard{
-    width:100%; max-width:420px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
-    border-radius:18px; padding:26px;
-    border:1px solid rgba(255,255,255,0.06);
-    text-align:center; box-shadow: 0 10px 40px rgba(255,0,80,0.06);
-    backdrop-filter: blur(6px);
-  }
-  .lockCard h1{ margin:0 0 8px; font-size:24px; color:var(--accent); text-shadow:0 6px 20px rgba(255,0,80,0.08); }
-  .lockCard p{ margin:0 0 18px; color:var(--muted); font-size:14px; }
-  #passInput{
-    width:100%; padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,0.06);
-    background:transparent; color:#fff; font-size:16px; outline:none;
-  }
-  #unlockBtn{
-    margin-top:14px; padding:10px 22px; border-radius:12px; border:none;
-    background: linear-gradient(90deg,var(--accent), #ff2b78);
-    color:white; font-weight:600; cursor:pointer; font-size:16px;
-    box-shadow: 0 10px 30px rgba(255,0,80,0.12);
-  }
-
-  /* ---------- HEART BACKGROUND ---------- */
-  .heart-bg{
-    position:fixed; z-index:1;
-    top:50%; left:50%; transform:translate(-50%,-50%);
-    width:420px; height:420px;
-    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-    border-radius:50% 50% 40% 40% / 60% 60% 40% 40%;
-    box-shadow: 0 0 120px rgba(255,0,80,0.06), inset 0 0 40px rgba(255,255,255,0.02);
-    pointer-events:none;
-    transition: transform 250ms ease, box-shadow 250ms ease;
-    filter: drop-shadow(0 10px 30px rgba(255,0,80,0.05));
-    mix-blend-mode: screen;
-    animation: heartbeat 2.2s infinite ease-in-out;
-  }
-  @keyframes heartbeat{
-    0%{ transform:translate(-50%,-50%) scale(1); }
-    20%{ transform:translate(-50%,-50%) scale(1.06); }
-    40%{ transform:translate(-50%,-50%) scale(1); }
-    60%{ transform:translate(-50%,-50%) scale(1.05); }
-    100%{ transform:translate(-50%,-50%) scale(1); }
-  }
-
-  /* ---------- PAGE LAYOUT ---------- */
-  .page{
-    position:relative; z-index:10; max-width:var(--maxw); margin:0 auto; padding:48px 20px 140px;
-  }
-  .logo{
-    text-align:center; font-size:56px; letter-spacing:6px; font-weight:900;
-    color:var(--accent); margin-top:60px; margin-bottom:28px;
-    text-shadow: 0 20px 50px rgba(255,0,80,0.08);
-  }
-
-  .grid{
-    display:grid; grid-template-columns: 1fr 1fr; gap:var(--gap);
-  }
-  /* single column on small screens */
-  @media (max-width:820px){ .grid{ grid-template-columns: 1fr; } .logo{ font-size:40px; } 
-    .heart-bg{ width:260px; height:260px; } .page{ padding-top:36px; }
-  }
-
-  /* ---------- SECTION CARD ---------- */
-  .card{
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    border-radius:calc(var(--radius) - 4px);
-    padding:18px; border:1px solid rgba(255,255,255,0.04);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
-    backdrop-filter: blur(8px);
-    position:relative; overflow:hidden;
-  }
-  .card .title{
-    display:flex; align-items:center; justify-content:space-between;
-    margin-bottom:8px;
-  }
-  .card h3{ margin:0; font-size:18px; color:var(--accent-2); letter-spacing:0.2px; }
-  .mini-btn{
-    background:transparent; border:1px solid rgba(255,255,255,0.06); padding:8px 12px; border-radius:10px;
-    color:#fff; cursor:pointer; font-weight:600;
-  }
-
-  .content{
-    max-height:0; overflow:hidden; transition: max-height 340ms ease, padding 340ms ease;
-    padding-top:0;
-  }
-  .content.open{ max-height:600px; padding-top:10px; }
-
-  textarea.input{
-    width:100%; min-height:120px; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.03);
-    background:rgba(0,0,0,0.35); color:#fff; resize:vertical; font-size:15px;
-  }
-  .post-row{ display:flex; gap:10px; margin-top:10px; align-items:center; }
-  .post-row button.post{
-    flex:0 0 auto; background:var(--accent); border:none; color:#fff; padding:10px 14px; border-radius:10px; cursor:pointer;
-    box-shadow: 0 6px 20px rgba(255,0,80,0.08);
-  }
-  .list{ margin-top:12px; display:flex; flex-direction:column; gap:10px; max-height:260px; overflow:auto; padding-right:8px; }
-  .msg{
-    background: linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0.01));
-    padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,0.03); font-size:14px;
-  }
-  .msg.admin{ border-left:4px solid var(--accent); }
-  .msg.user{ border-left:4px solid #1fa2ff; }
-
-  /* assistant box */
-  .assistant-box{
-    margin-top:10px; padding:12px; border-radius:12px; background: linear-gradient(90deg, rgba(255,0,90,0.04), rgba(255,255,255,0.02));
-    border:1px solid rgba(255,255,255,0.04); color:#ffd7e6; display:none;
-  }
-  .assistant-controls{ display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap; }
-
-  /* footer small */
-  .foot{ text-align:center; margin-top:28px; color:var(--muted); font-size:13px; }
-
-  /* tiny responsiveness */
-  @media (max-width:420px){
-    .logo{ font-size:32px; letter-spacing:3px; }
-    .card{ padding:14px; }
-    textarea.input{ min-height:100px; }
-  }
-
-</style>
-</head>
-<body>
-
-<!-- LOCK SCREEN -->
-<div id="lockScreen" aria-hidden="false">
-  <div class="lockCard" role="dialog" aria-label="Unlock Private Space">
-    <h1>DARK KING</h1>
-    <p style="color:var(--muted)">यह निजी स्थान केवल तुम्हारे लिए। पासवर्ड डालकर प्रवेश करें।</p>
-    <input id="passInput" type="password" placeholder="पासवर्ड डालें (उदा. 143)" />
-    <div style="display:flex; gap:10px; justify-content:center; margin-top:12px;">
-      <button id="unlockBtn">Unlock</button>
-      <button id="hintBtn" class="mini-btn">Hint</button>
-    </div>
-    <p id="lockMsg" style="margin-top:10px; color:var(--muted); font-size:13px;"></p>
-  </div>
-</div>
-
-<!-- HEART BACKGROUND (glass/mirror) -->
-<div class="heart-bg" id="heart"></div>
-
-<!-- MAIN PAGE -->
-<main class="page" id="mainContent" aria-hidden="true" style="display:none;">
-  <div class="logo">DARK KING</div>
-
-  <div class="grid">
-    <!-- Admin -->
-    <div class="card">
-      <div class="title">
-        <h3>Admin Message</h3>
-        <div>
-          <button class="mini-btn" data-target="adminContent">Open</button>
-        </div>
-      </div>
-      <div id="adminContent" class="content">
-        <textarea id="adminInput" class="input" placeholder="Admin के लिए संदेश लिखें..."></textarea>
-        <div class="post-row">
-          <button class="post" id="postAdmin">Post</button>
-          <div style="flex:1"></div>
-          <button class="mini-btn" id="adminClear">Clear</button>
-        </div>
-        <div class="list" id="adminList"></div>
-      </div>
-    </div>
-
-    <!-- User -->
-    <div class="card">
-      <div class="title">
-        <h3>User Message</h3>
-        <div>
-          <button class="mini-btn" data-target="userContent">Open</button>
-        </div>
-      </div>
-      <div id="userContent" class="content">
-        <textarea id="userInput" class="input" placeholder="User अपनी बात यहाँ लिखे..."></textarea>
-        <div class="post-row">
-          <button class="post" id="postUser">Send</button>
-          <div style="flex:1"></div>
-          <button class="mini-btn" id="userClear">Clear</button>
-        </div>
-        <div class="list" id="userList"></div>
-      </div>
-    </div>
-
-    <!-- Pages / Media -->
-    <div class="card" style="grid-column: 1 / -1;">
-      <div class="title">
-        <h3>Pages & Media</h3>
-        <div>
-          <button class="mini-btn" data-target="pageContent">Open</button>
-        </div>
-      </div>
-      <div id="pageContent" class="content">
-        <p style="color:var(--muted); margin:0 0 8px;">यहाँ आप फोटो/वीडियो के लिंक, यादें और नोट्स रख सकते हैं।</p>
-        <input id="mediaInput" class="input" placeholder="Link या छोटा नोट डालें..." style="height:48px;" />
-        <div class="post-row">
-          <button class="post" id="addMedia">Add</button>
-          <div style="flex:1"></div>
-          <button class="mini-btn" id="clearMedia">Clear</button>
-        </div>
-        <div class="list" id="mediaList"></div>
-
-        <!-- AI Guide inside pages -->
-        <div style="margin-top:12px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <strong style="color:var(--accent-2)">AI Guide — Female Voice</strong>
-            <div style="display:flex; gap:10px;">
-              <button class="mini-btn" id="showAssist">Show</button>
-              <button class="mini-btn" id="speakAssist">Play</button>
-            </div>
-          </div>
-
-          <div class="assistant-box" id="assistantBox" aria-live="polite">
-            मैं तुम्हारी निजी मदद करने वाली assistant हूँ। नीचे के बटन दबाकर मैं बताऊँगी कि हर सेक्शन किस लिए है, कैसे उपयोग करें और तुम सुरक्षित कैसे रहो।
-          </div>
-
-        </div>
-
-      </div>
-    </div>
-
-  </div>
-
-  <div class="foot">© Dark King • यह निजी पेज सिर्फ़ आपके और आपकी प्रिय के लिए।</div>
-</main>
-
-<script>
 /* =========================
-   Configuration
-   - CHANGE password below if needed
+   CONFIGURATION (EDIT HERE)
    ========================= */
-const PASSWORDS = ['DTYPL5133']; // acceptable passwords
 
-/* ---------- LOCK LOGIC ---------- */
-const lockScreen = document.getElementById('lockScreen');
-const mainContent = document.getElementById('mainContent');
-const passInput = document.getElementById('passInput');
-const unlockBtn = document.getElementById('unlockBtn');
-const hintBtn = document.getElementById('hintBtn');
-const lockMsg = document.getElementById('lockMsg');
+/* Lock password — change here to update site password.
+   This is the single place to change password (edit index.html on GitHub). */
+const ADMIN_PASSWORD = "DTYPL5133"; // ← change this value in code to update password
 
-unlockBtn.addEventListener('click', tryUnlock);
-passInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') tryUnlock(); });
+/* Admin messages (code-only): keep array of messages.
+   System will pick a message daily (based on date) — daily rotation.
+   You can add as many messages as you want. These are read-only in UI. */
+const ADMIN_MESSAGES = [
+  " लाइफ मे कुछ अच्छा करो यार ",
+  "मुझे ऐसा लगता है कि तुम लोगों को लगता है कि मैं किसी बात पर ज़िद कर बैठूँगा — कि मैं कहूँगा कि मुझसे शादी करो या कोई और बात जिस पर मैं अड़ जाऊँ, चाहे कुछ भी हो जाए, चाहे बदनामी ही क्यों न हो जाए।\n\nअरे यार, मेरे पास भी अपना स्वाभिमान है, मुझे अपनी इज़्ज़त की भी चिंता होती है — कि क्या करने से मेरी इज़्ज़त घटेगी, क्या करने से मुझे बदनामी होगी।\n\nतुम कौन होते हो मेरी जाति पर या मेरे फैसलों पर सवाल उठाने वाले?\n\nमुझे अपनी जाति का भी मान है, और मैं कोई भागने वाला या शादी से डरने वाला इंसान नहीं हूँ।\n\nलेकिन अगर कोई मुझे जलाएगा, तड़पाएगा, उलझाकर रखेगा, मेरी भावनाओं का मज़ाक बनाएगा —\n\nतो मुझे दिक्कत तो होगी ही।\n\nइसके लिए तो मैं लड़ूँगा ही, गुस्सा भी आएगा — मेरे पास भी दिल-दिमाग है, और मुझे पता है कि क्या सही है और क्या ग़लत।\n\nतुम अगर सही से बोलोगे, मार्गदर्शन दोगे, बात को महत्व दोगे —\n\nतो मैं समझूँगा।\n\nवरना मुझे लगता है कि कोई मुझे जान-बूझकर जला रहा है, और मेरी बात की कोई value ही नहीं है।\n\nअगर तुम धोखा देने की सोच भी रखोगे,\n\nतो फिर तुम्हें मेरे अंदर वही मिलेगा, जैसा इरादा तुम मेरे लिए रखोगे।\n\nऔर कुछ कहने की ज़रूरत नहीं।",
+  "मधुर शब्द बाँटो, प्यार पाओ।",
+  "छोटे छोटे कदम बड़े बदलाव लाते हैं।",
+  "आज एक मुस्कान किसी का दिन बना सकती है — मुस्कुराओ! ❤️",
+  "सिकंदर बनो पर दिल नरम रखो।",
+  "हर दिन एक नया मौका है — कुछ अच्छा करें।"
+];
 
-hintBtn.addEventListener('click', ()=> {
-  lockMsg.textContent = 'Hint: छोटा तीन अंकों का प्यार-code (उदा. 143)।'; 
-});
+/* Optional: custom date-specific overrides (YYYY-MM-DD -> message index)
+   If you want a specific message for a date, add here:
+   "2025-12-25": 3   // will pick ADMIN_MESSAGES[3]
+*/
+const ADMIN_DATE_OVERRIDES = {
+  // "2025-12-25": 4
+};
 
-function tryUnlock(){
-  const val = (passInput.value||'').trim();
-  if(PASSWORDS.includes(val)){
-    lockScreen.style.display = 'none';
-    mainContent.style.display = 'block';
-    mainContent.setAttribute('aria-hidden','false');
-    speakIntro();
-  } else {
-    lockMsg.textContent = 'गलत पासवर्ड — फिर कोशिश करो।';
-    // brief shake effect
-    lockScreen.animate([{transform:'translateY(0)'},{transform:'translateY(-8px)'},{transform:'translateY(0)'}], {duration:300});
-    speakText('गलत पासवर्ड. दुबारा प्रयास करें।');
+/* =========================
+   Helpers: TTS, toast, explain
+   ========================= */
+let isSpeaking = false;
+let currentUtterance = null;
+
+function speak(text, rate = 0.8, pitch = 1.0, volume = 1.0) {
+  if (!('speechSynthesis' in window)) {
+    console.warn("Speech synthesis not supported");
+    return;
+  }
+  
+  try {
+    // Stop any ongoing speech
+    if (isSpeaking) {
+      speechSynthesis.cancel();
+    }
+    
+    const utterance = new SpeechSynthesisUtterance(String(text));
+    currentUtterance = utterance;
+    
+    // Get available voices
+    const voices = speechSynthesis.getVoices();
+    
+    // Try to find a Hindi voice first, then English, then any voice
+    let voice = voices.find(v => /hi|hindi/i.test(v.lang)) || 
+                voices.find(v => /en/i.test(v.lang)) || 
+                voices[0];
+    
+    if (voice) {
+      utterance.voice = voice;
+      utterance.lang = voice.lang;
+    } else {
+      utterance.lang = 'hi-IN';
+    }
+    
+    // Set speech parameters
+    utterance.rate = rate; // Slower speed for clarity
+    utterance.pitch = pitch;
+    utterance.volume = volume;
+    
+    // Event handlers
+    utterance.onstart = function() {
+      isSpeaking = true;
+    };
+    
+    utterance.onend = function() {
+      isSpeaking = false;
+      currentUtterance = null;
+    };
+    
+    utterance.onerror = function(event) {
+      console.error("Speech synthesis error:", event);
+      isSpeaking = false;
+      currentUtterance = null;
+    };
+    
+    // Speak the text
+    speechSynthesis.speak(utterance);
+    
+  } catch (error) {
+    console.error("Error in speak function:", error);
+    isSpeaking = false;
+    currentUtterance = null;
   }
 }
 
-/* ---------- HEART INTERACTION ---------- */
-const heart = document.getElementById('heart');
-let heartRect = null;
-function smallReact(){
-  heart.style.transform = 'translate(-50%,-50%) scale(1.08)';
-  setTimeout(()=> heart.style.transform = '', 300);
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  
+  // Clear any existing timeout
+  if (t._timeout) {
+    clearTimeout(t._timeout);
+  }
+  
+  // Hide toast after 3 seconds
+  t._timeout = setTimeout(() => {
+    t.style.opacity = '0';
+  }, 3000);
 }
-document.addEventListener('click', (e)=>{
-  // small nudge on click
-  smallReact();
-});
-// track pointer and slightly move heart (parallax)
-document.addEventListener('mousemove', (e)=>{
-  const x = (e.clientX/window.innerWidth - 0.5) * 24; // -12..12
-  const y = (e.clientY/window.innerHeight - 0.5) * 18;
-  heart.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(1)`;
-});
-document.addEventListener('touchmove', (e)=>{
-  const t = e.touches[0];
-  const x = (t.clientX/window.innerWidth - 0.5) * 20;
-  const y = (t.clientY/window.innerHeight - 0.5) * 16;
-  heart.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(1)`;
-});
-document.addEventListener('touchend', ()=>{ heart.style.transform='translate(-50%,-50%) scale(1)'; });
 
-/* ---------- OPEN/CLOSE SECTIONS ---------- */
-document.querySelectorAll('.mini-btn[data-target]').forEach(btn=>{
-  btn.addEventListener('click', (ev)=>{
-    const id = btn.getAttribute('data-target');
-    const el = document.getElementById(id);
-    if(!el) return;
-    el.classList.toggle('open');
-    // ensure heart reacts
-    smallReact();
-    // scroll into view on open (mobile-friendly)
-    if(el.classList.contains('open')) setTimeout(()=> el.scrollIntoView({behavior:'smooth', block:'center'}), 260);
+/* Tap-to-explain: data-explain attribute */
+document.addEventListener('click', function(event) {
+  const element = event.target.closest('[data-explain]');
+  if (element) {
+    const text = element.getAttribute('data-explain');
+    if (text) {
+      speak(text);
+      showToast(text);
+    }
+  }
+});
+
+/* =========================
+   Lock behavior
+   ========================= */
+const lockCard = document.getElementById('lockCard');
+const unlockInput = document.getElementById('unlockInput');
+const unlockBtn = document.getElementById('unlockBtn');
+const mainGrid = document.getElementById('mainGrid');
+
+unlockBtn.addEventListener('click', function() {
+  attemptUnlock(unlockInput.value.trim());
+});
+
+// Enter key support for password input
+unlockInput.addEventListener('keypress', function(event) {
+  if (event.key === 'Enter') {
+    attemptUnlock(unlockInput.value.trim());
+  }
+});
+
+function attemptUnlock(password) {
+  if (!password) {
+    speak("कृपया पासवर्ड भरें", 0.7);
+    showToast("Password required");
+    unlockInput.focus();
+    return;
+  }
+  
+  if (password === ADMIN_PASSWORD) {
+    speak("स्वागत है, साइट खुल रही है। यह साइट विशेष लोगों के लिए है, आप यहाँ तक पहुँच गए हैं, आपका दिल से स्वागत है! सबसे पहले आपको एडमिन का संदेश मिलेगा, फिर आप मुझसे चैट कर सकते हैं। मैं हर सवाल का जवाब तो नहीं दे पाऊँगी, लेकिन आपके संदेश को एडमिन तक पहुँचाकर सही उत्तर दिलवा सकती हूँ।", 0.7);
+    
+    // Hide lock card and show main grid
+    lockCard.style.display = 'none';
+    mainGrid.style.display = 'block';
+    
+    // Show today's admin message
+    displayDailyAdmin();
+    
+  } else {
+    speak("गलत पासवर्ड, कृपया पुनः प्रयास करें", 0.7);
+    showToast("Wrong password");
+    unlockInput.value = '';
+    unlockInput.focus();
+    
+    // Shake animation for wrong password
+    lockCard.animate([
+      { transform: 'translateX(-6px)' },
+      { transform: 'translateX(6px)' },
+      { transform: 'translateX(0)' }
+    ], { duration: 380 });
+  }
+}
+
+/* =========================
+   Admin daily message logic (code-only)
+   ========================= */
+function getDailyAdminIndex() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = (today.getMonth() + 1).toString().padStart(2, '0');
+  const day = today.getDate().toString().padStart(2, '0');
+  const dateKey = `${year}-${month}-${day}`;
+  
+  // Check for override
+  if (ADMIN_DATE_OVERRIDES[dateKey] !== undefined) {
+    return ADMIN_DATE_OVERRIDES[dateKey] % ADMIN_MESSAGES.length;
+  }
+  
+  // Deterministic rotation based on date
+  const numeric = Number(`${year}${month}${day}`);
+  return numeric % ADMIN_MESSAGES.length;
+}
+
+function displayDailyAdmin() {
+  const index = getDailyAdminIndex();
+  const message = ADMIN_MESSAGES[index] || "कोई संदेश उपलब्ध नहीं।";
+  const messageElement = document.getElementById('adminMessage');
+  const timeElement = document.getElementById('adminTime');
+  
+  // Replace \n with <br> for HTML display
+  const formattedMessage = message.replace(/\n/g, '<br>');
+  messageElement.innerHTML = formattedMessage;
+  
+  // Format current date and time
+  const now = new Date();
+  const options = { 
+    day: 'numeric', 
+    month: 'long', 
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  };
+  timeElement.textContent = now.toLocaleString('hi-IN', options);
+  
+  // Speak admin message after a delay
+  setTimeout(() => {
+    speak("Admin संदेश: " + message, 0.7);
+  }, 1500);
+}
+
+/* =========================
+   Minimize toggles
+   ========================= */
+document.querySelectorAll('.minBtn').forEach(button => {
+  button.addEventListener('click', function() {
+    const panelType = this.getAttribute('data-toggle'); // admin, user, or media
+    const panel = document.getElementById(panelType + 'Panel');
+    
+    if (panel.classList.contains('minimized')) {
+      panel.classList.remove('minimized');
+      this.textContent = '–';
+    } else {
+      panel.classList.add('minimized');
+      this.textContent = '+';
+    }
   });
 });
 
-/* ---------- POSTING / LIST MANAGEMENT ---------- */
-function mkNode(text,cls){
-  const d = document.createElement('div');
-  d.className = 'msg ' + cls;
-  d.textContent = text;
-  return d;
-}
-
-/* Admin */
-const postAdmin = document.getElementById('postAdmin');
-const adminInput = document.getElementById('adminInput');
-const adminList = document.getElementById('adminList');
-postAdmin.addEventListener('click', ()=>{
-  const v = adminInput.value.trim(); if(!v) return;
-  adminList.prepend(mkNode(v, 'admin'));
-  adminInput.value=''; speakText('Admin का संदेश सेव हो गया।');
-});
-document.getElementById('adminClear').addEventListener('click', ()=>{ adminInput.value=''; });
-
-/* User */
-const postUser = document.getElementById('postUser');
+/* =========================
+   Chat: user messages (localStorage)
+   ========================= */
+const chatWindow = document.getElementById('chatWindow');
 const userInput = document.getElementById('userInput');
-const userList = document.getElementById('userList');
-postUser.addEventListener('click', ()=>{
-  const v = userInput.value.trim(); if(!v) return;
-  userList.prepend(mkNode(v, 'user'));
-  userInput.value=''; speakText('संदेश भेजा गया।');
-});
-document.getElementById('userClear').addEventListener('click', ()=>{ userInput.value=''; });
+const sendUser = document.getElementById('sendUser');
+const savedArea = document.getElementById('savedArea');
 
-/* Media */
-const addMedia = document.getElementById('addMedia');
-const mediaInput = document.getElementById('mediaInput');
-const mediaList = document.getElementById('mediaList');
-addMedia.addEventListener('click', ()=>{
-  const v = mediaInput.value.trim(); if(!v) return;
-  // if it's a URL to image or video, create link; else plain text
-  const node = document.createElement('div'); node.className='msg';
-  if(v.match(/^https?:\\/\\/.*\\.(jpg|jpeg|png|gif)$/i)){
-    const img = document.createElement('img'); img.src=v; img.style.maxWidth='100%'; img.style.borderRadius='10px';
-    node.appendChild(img);
-  } else if(v.match(/^https?:\\/\\/.*/i)){
-    const a = document.createElement('a'); a.href=v; a.textContent=v; a.target='_blank'; a.rel='noopener';
-    node.appendChild(a);
+function getUserMessages() {
+  try {
+    const messages = localStorage.getItem('priyanka_user_v2');
+    return messages ? JSON.parse(messages) : [];
+  } catch (error) {
+    console.error("Error reading messages from localStorage:", error);
+    return [];
+  }
+}
+
+function saveUserMessages(messages) {
+  try {
+    localStorage.setItem('priyanka_user_v2', JSON.stringify(messages));
+  } catch (error) {
+    console.error("Error saving messages to localStorage:", error);
+  }
+}
+
+function renderSavedMessages() {
+  const messages = getUserMessages();
+  
+  if (messages.length === 0) {
+    savedArea.innerHTML = "<div class='muted'>No saved messages.</div>";
+    return;
+  }
+  
+  const messagesHtml = messages.map(message => `
+    <div style="padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px;">
+      <div style="font-size:14px">${escapeHtml(message.text)}</div>
+      <div class="muted">${message.time}</div>
+    </div>
+  `).join('');
+  
+  savedArea.innerHTML = messagesHtml;
+}
+
+function addChatMessage(sender, text) {
+  const messageRow = document.createElement('div');
+  messageRow.className = 'chatRow ' + (sender === 'user' ? 'user' : 'assistant');
+  
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble ' + (sender === 'user' ? 'user' : 'assistant');
+  bubble.textContent = text;
+  
+  messageRow.appendChild(bubble);
+  chatWindow.appendChild(messageRow);
+  
+  // Scroll to the bottom
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function assistantReply(userText) {
+  const text = userText.toLowerCase();
+  
+  if (text.includes('hello') || text.includes('hi') || text.includes('namaste')) {
+    return "हैलो! मैं आपकी कैसे मदद करूँ? ❤️";
+  }
+  
+  if (text.includes('pyar') || text.includes('love') || text.includes('❤️') || text.includes('pyaar')) {
+    return "आप बेहद खास हो — मैं हमेशा साथ हूँ ❤️";
+  }
+  
+  if (text.includes('photo') || text.includes('picture') || text.includes('image')) {
+    return "Media में photo URL डालकर Show photo दबाएँ।";
+  }
+  
+  if (text.includes('video') || text.includes('movie') || text.includes('film')) {
+    return "Media में video URL डालकर Play video दबाएँ।";
+  }
+  
+  if (text.includes('thanks') || text.includes('thank you') || text.includes('dhanyavad') || text.includes('shukriya')) {
+    return "आपका स्वागत है! हमेशा आपकी सेवा में ❤️";
+  }
+  
+  if (text.includes('help') || text.includes('madad') || text.includes('sahayata')) {
+    return "मैं आपकी कैसे मदद कर सकती हूँ? आप अपनी बात मुझे बताएं, मैं एडमिन तक पहुँचाने में मदद करूँगी।";
+  }
+  
+  return "मैंने आपकी बात सुनी: \"" + userText + "\" — बताइए और क्या चाहिए?";
+}
+
+sendUser.addEventListener('click', function() {
+  const message = userInput.value.trim();
+  
+  if (!message) {
+    speak("कृपया संदेश लिखें", 0.7);
+    showToast("Enter a message");
+    userInput.focus();
+    return;
+  }
+  
+  // Add user message to chat
+  addChatMessage('user', message);
+  
+  // Save message
+  const messages = getUserMessages();
+  const now = new Date();
+  const timeString = now.toLocaleString('hi-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  
+  messages.push({
+    text: message,
+    time: timeString
+  });
+  
+  saveUserMessages(messages);
+  renderSavedMessages();
+  
+  // Get and display assistant reply
+  const reply = assistantReply(message);
+  
+  setTimeout(() => {
+    addChatMessage('assistant', reply);
+    speak(reply, 0.7);
+  }, 600);
+  
+  // Clear input and refocus
+  userInput.value = '';
+  userInput.focus();
+});
+
+// Enter key support for chat (but allow Shift+Enter for new line)
+userInput.addEventListener('keypress', function(event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    sendUser.click();
+  }
+});
+
+// Clear chat button
+document.getElementById('clearChatBtn').addEventListener('click', function() {
+  chatWindow.innerHTML = '';
+  speak("Chat साफ़ हो गया", 0.7);
+  showToast("Chat cleared");
+});
+
+// Download messages button
+document.getElementById('downloadUser').addEventListener('click', function() {
+  const messages = getUserMessages();
+  const data = JSON.stringify(messages, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'user-messages.json';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  URL.revokeObjectURL(url);
+  
+  speak("Saved messages डाउनलोड हो रहे हैं", 0.7);
+  showToast("Messages downloaded");
+});
+
+// Show saved messages button
+document.getElementById('showSavedBtn').addEventListener('click', function() {
+  renderSavedMessages();
+  speak("Saved messages दिखाए जा रहे हैं", 0.7);
+  showToast("Saved messages shown");
+});
+
+// Initial render of saved messages
+renderSavedMessages();
+
+/* =========================
+   Media loading
+   ========================= */
+const mediaPreview = document.getElementById('mediaPreview');
+
+document.getElementById('loadMediaBtn').addEventListener('click', function() {
+  const url = document.getElementById('mediaUrl').value.trim();
+  
+  if (!url) {
+    speak("कृपया media url डालें", 0.7);
+    showToast("Enter URL");
+    return;
+  }
+  
+  loadMedia(url);
+});
+
+function loadMedia(url) {
+  // YouTube video
+  if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    let videoId = '';
+    
+    if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1].split(/[?&]/)[0];
+    } else if (url.includes('v=')) {
+      videoId = url.split('v=')[1].split('&')[0];
+    }
+    
+    if (videoId) {
+      mediaPreview.innerHTML = `
+        <iframe 
+          width="100%" 
+          height="260" 
+          src="https://www.youtube.com/embed/${videoId}" 
+          frameborder="0" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+          allowfullscreen>
+        </iframe>
+      `;
+      speak("YouTube video लोड हो गया", 0.7);
+      showToast("YouTube loaded");
+      return;
+    }
+  }
+  
+  // Video files
+  if (/\.mp4|\.webm|\.ogg/i.test(url)) {
+    mediaPreview.innerHTML = `
+      <video controls style="width:100%;max-height:320px;">
+        <source src="${url}" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    `;
+    speak("Video लोड हो गया", 0.7);
+    showToast("Video loaded");
+    return;
+  }
+  
+  // Audio files
+  if (/\.mp3|\.wav|\.m4a|\.ogg|audio/i.test(url)) {
+    mediaPreview.innerHTML = `
+      <audio controls style="width:100%;">
+        <source src="${url}" type="audio/mpeg">
+        Your browser does not support the audio element.
+      </audio>
+    `;
+    speak("Audio लोड हो गया", 0.7);
+    showToast("Audio loaded");
+    return;
+  }
+  
+  // Image files
+  if (/\.jpg|\.jpeg|\.png|\.gif|\.svg|\.webp/i.test(url)) {
+    mediaPreview.innerHTML = `
+      <img 
+        src="${url}" 
+        alt="Loaded media" 
+        style="width:100%;height:auto;display:block;max-height:320px;border-radius:8px;"
+        onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'muted\\'>Failed to load image</div>';"
+      >
+    `;
+    speak("Image लोड हो गया", 0.7);
+    showToast("Image loaded");
+    return;
+  }
+  
+  // Default fallback
+  mediaPreview.innerHTML = `
+    <div style="padding:12px;text-align:center;">
+      Preview not supported for this URL.<br>
+      <a href="${url}" target="_blank" style="color:var(--accent3);text-decoration:none;">Open link in new tab</a>
+    </div>
+  `;
+  speak("Link लोड हो गया, लेकिन preview उपलब्ध नहीं है", 0.7);
+  showToast("Link loaded (no preview)");
+}
+
+// Media control buttons
+document.getElementById('playAudioBtn').addEventListener('click', function() {
+  const audio = mediaPreview.querySelector('audio');
+  if (audio) {
+    audio.play();
+    speak("Audio चल रहा है", 0.7);
+    showToast("Audio playing");
   } else {
-    node.textContent = v;
+    speak("No audio loaded to play", 0.7);
+    showToast("No audio to play");
   }
-  mediaList.prepend(node);
-  mediaInput.value=''; speakText('नया मीडिया आइटम जोड़ दिया गया।');
 });
-document.getElementById('clearMedia').addEventListener('click', ()=>{ mediaInput.value=''; });
 
-/* ---------- ASSISTANT (VOICE + BOX) ---------- */
-const assistantBox = document.getElementById('assistantBox');
-document.getElementById('showAssist').addEventListener('click', ()=>{
-  assistantBox.style.display = assistantBox.style.display === 'block' ? 'none' : 'block';
-  assistantBox.style.opacity = 1;
+document.getElementById('playVideoBtn').addEventListener('click', function() {
+  const video = mediaPreview.querySelector('video');
+  if (video) {
+    video.play();
+    speak("Video चल रहा है", 0.7);
+    showToast("Video playing");
+  } else {
+    speak("No video loaded to play", 0.7);
+    showToast("No video to play");
+  }
 });
-document.getElementById('speakAssist').addEventListener('click', ()=> speakIntro());
 
-function speakIntro(){
-  const text = `नमस्ते… मैं तुम्हारी निजी सहायता करने वाली assistant हूँ। यह जगह सिर्फ तुम्हारे और तुम्हारी प्रिय के लिए सुरक्षित है।
-  सबसे ऊपर DARK KING का लोगो तुम्हारी पहचान है।
-  Admin Message सेक्शन में तुम अपने दिल के शब्द लिख सकते हो, और User Message सेक्शन में वह लड़की अपनी बात लिख सकती है।
-  Pages & Media सेक्शन में तुम यादें, फोटो और वीडियो का लिंक रख सकते हो।
-  हर सेक्शन को Open या Close कर सकते हो। यह सुरक्षित और private जगह है — यहाँ तुम बेख़ौफ़ अपनी भावनाएँ लिख सकते हो।`;
-  assistantBox.style.display = 'block';
-  speakText(text);
+document.getElementById('showPhotoBtn').addEventListener('click', function() {
+  const image = mediaPreview.querySelector('img');
+  if (image) {
+    speak("Photo preview दिख रहा है", 0.7);
+    showToast("Photo preview");
+  } else {
+    speak("No image loaded to show", 0.7);
+    showToast("No image to show");
+  }
+});
+
+/* Voice guide */
+document.getElementById('voiceGuide').addEventListener('click', function() {
+  const guide = "यह Priyanka assistant है। सबसे पहले लॉक खुलना चाहिए। Admin Message readonly है और हर दिन का संदेश दिखेगा। User Chat में message भेजें और ❤ दबाएँ। Media box में URL डालकर Load करें।";
+  speak(guide, 0.7);
+  showToast("Guide चलाया गया");
+});
+
+/* =========================
+   Initialize the application
+   ========================= */
+document.addEventListener('DOMContentLoaded', function() {
+  // Auto-focus on password input
+  unlockInput.focus();
+  
+  // Initialize TTS voices if available
+  if ('speechSynthesis' in window) {
+    // Load voices
+    setTimeout(function() {
+      const voices = speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        console.log("TTS voices loaded:", voices.length);
+      }
+    }, 500);
+    
+    // Some browsers need this to properly load voices
+    speechSynthesis.getVoices();
+  }
+  
+  // Welcome message (silent)
+  console.log("Priyanka Assistant loaded. Please enter password to unlock.");
+});/* =========================
+   CONFIGURATION (EDIT HERE)
+   ========================= */
+
+/* Lock password — change here to update site password.
+   This is the single place to change password (edit index.html on GitHub). */
+const ADMIN_PASSWORD = "DTYPL5133"; // ← change this value in code to update password
+
+/* Admin messages (code-only): keep array of messages.
+   System will pick a message daily (based on date) — daily rotation.
+   You can add as many messages as you want. These are read-only in UI. */
+const ADMIN_MESSAGES = [
+  " लाइफ मे कुछ अच्छा करो यार ",
+  "मुझे ऐसा लगता है कि तुम लोगों को लगता है कि मैं किसी बात पर ज़िद कर बैठूँगा — कि मैं कहूँगा कि मुझसे शादी करो या कोई और बात जिस पर मैं अड़ जाऊँ, चाहे कुछ भी हो जाए, चाहे बदनामी ही क्यों न हो जाए।\n\nअरे यार, मेरे पास भी अपना स्वाभिमान है, मुझे अपनी इज़्ज़त की भी चिंता होती है — कि क्या करने से मेरी इज़्ज़त घटेगी, क्या करने से मुझे बदनामी होगी।\n\nतुम कौन होते हो मेरी जाति पर या मेरे फैसलों पर सवाल उठाने वाले?\n\nमुझे अपनी जाति का भी मान है, और मैं कोई भागने वाला या शादी से डरने वाला इंसान नहीं हूँ।\n\nलेकिन अगर कोई मुझे जलाएगा, तड़पाएगा, उलझाकर रखेगा, मेरी भावनाओं का मज़ाक बनाएगा —\n\nतो मुझे दिक्कत तो होगी ही।\n\nइसके लिए तो मैं लड़ूँगा ही, गुस्सा भी आएगा — मेरे पास भी दिल-दिमाग है, और मुझे पता है कि क्या सही है और क्या ग़लत।\n\nतुम अगर सही से बोलोगे, मार्गदर्शन दोगे, बात को महत्व दोगे —\n\nतो मैं समझूँगा।\n\nवरना मुझे लगता है कि कोई मुझे जान-बूझकर जला रहा है, और मेरी बात की कोई value ही नहीं है।\n\nअगर तुम धोखा देने की सोच भी रखोगे,\n\nतो फिर तुम्हें मेरे अंदर वही मिलेगा, जैसा इरादा तुम मेरे लिए रखोगे।\n\nऔर कुछ कहने की ज़रूरत नहीं।",
+  "मधुर शब्द बाँटो, प्यार पाओ।",
+  "छोटे छोटे कदम बड़े बदलाव लाते हैं।",
+  "आज एक मुस्कान किसी का दिन बना सकती है — मुस्कुराओ! ❤️",
+  "सिकंदर बनो पर दिल नरम रखो।",
+  "हर दिन एक नया मौका है — कुछ अच्छा करें।"
+];
+
+/* Optional: custom date-specific overrides (YYYY-MM-DD -> message index)
+   If you want a specific message for a date, add here:
+   "2025-12-25": 3   // will pick ADMIN_MESSAGES[3]
+*/
+const ADMIN_DATE_OVERRIDES = {
+  // "2025-12-25": 4
+};
+
+/* =========================
+   Helpers: TTS, toast, explain
+   ========================= */
+let isSpeaking = false;
+let currentUtterance = null;
+
+function speak(text, rate = 0.8, pitch = 1.0, volume = 1.0) {
+  if (!('speechSynthesis' in window)) {
+    console.warn("Speech synthesis not supported");
+    return;
+  }
+  
+  try {
+    // Stop any ongoing speech
+    if (isSpeaking) {
+      speechSynthesis.cancel();
+    }
+    
+    const utterance = new SpeechSynthesisUtterance(String(text));
+    currentUtterance = utterance;
+    
+    // Get available voices
+    const voices = speechSynthesis.getVoices();
+    
+    // Try to find a Hindi voice first, then English, then any voice
+    let voice = voices.find(v => /hi|hindi/i.test(v.lang)) || 
+                voices.find(v => /en/i.test(v.lang)) || 
+                voices[0];
+    
+    if (voice) {
+      utterance.voice = voice;
+      utterance.lang = voice.lang;
+    } else {
+      utterance.lang = 'hi-IN';
+    }
+    
+    // Set speech parameters
+    utterance.rate = rate; // Slower speed for clarity
+    utterance.pitch = pitch;
+    utterance.volume = volume;
+    
+    // Event handlers
+    utterance.onstart = function() {
+      isSpeaking = true;
+    };
+    
+    utterance.onend = function() {
+      isSpeaking = false;
+      currentUtterance = null;
+    };
+    
+    utterance.onerror = function(event) {
+      console.error("Speech synthesis error:", event);
+      isSpeaking = false;
+      currentUtterance = null;
+    };
+    
+    // Speak the text
+    speechSynthesis.speak(utterance);
+    
+  } catch (error) {
+    console.error("Error in speak function:", error);
+    isSpeaking = false;
+    currentUtterance = null;
+  }
 }
 
-/* Speak util - female/matching Hindi voice preference */
-function speakText(text){
-  if(!('speechSynthesis' in window)) return;
-  // Cancel any current
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'hi-IN';
-  u.rate = 1;
-  u.pitch = 1.05;
-  // choose a Hindi / female voice if available
-  const vs = speechSynthesis.getVoices();
-  // try to pick best candidate
-  for(const v of vs){
-    const n = (v.name || '').toLowerCase();
-    if(v.lang && v.lang.toLowerCase().startsWith('hi')){ u.voice = v; break; }
-    if(n.includes('hindi') || n.includes('female') || n.includes('google')){ u.voice = v; break; }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  
+  // Clear any existing timeout
+  if (t._timeout) {
+    clearTimeout(t._timeout);
   }
-  // fallback: any voice
-  speechSynthesis.speak(u);
+  
+  // Hide toast after 3 seconds
+  t._timeout = setTimeout(() => {
+    t.style.opacity = '0';
+  }, 3000);
 }
 
-/* set a small welcome on page load (not spoken until unlock) */
-window.addEventListener('load', ()=>{
-  // warm up voices (some browsers need speakSynthesis.getVoices() to be called)
-  if(speechSynthesis && speechSynthesis.getVoices().length === 0){
-    speechSynthesis.onvoiceschanged = ()=>{ /* no-op */ };
+/* Tap-to-explain: data-explain attribute */
+document.addEventListener('click', function(event) {
+  const element = event.target.closest('[data-explain]');
+  if (element) {
+    const text = element.getAttribute('data-explain');
+    if (text) {
+      speak(text);
+      showToast(text);
+    }
   }
 });
 
-/* accessibility: focus first input on lock */
-passInput.focus();
+/* =========================
+   Lock behavior
+   ========================= */
+const lockCard = document.getElementById('lockCard');
+const unlockInput = document.getElementById('unlockInput');
+const unlockBtn = document.getElementById('unlockBtn');
+const mainGrid = document.getElementById('mainGrid');
 
-</script>
-</body>
-</html>
+unlockBtn.addEventListener('click', function() {
+  attemptUnlock(unlockInput.value.trim());
+});
+
+// Enter key support for password input
+unlockInput.addEventListener('keypress', function(event) {
+  if (event.key === 'Enter') {
+    attemptUnlock(unlockInput.value.trim());
+  }
+});
+
+function attemptUnlock(password) {
+  if (!password) {
+    speak("कृपया पासवर्ड भरें", 0.7);
+    showToast("Password required");
+    unlockInput.focus();
+    return;
+  }
+  
+  if (password === ADMIN_PASSWORD) {
+    speak("स्वागत है, साइट खुल रही है। यह साइट विशेष लोगों के लिए है, आप यहाँ तक पहुँच गए हैं, आपका दिल से स्वागत है! सबसे पहले आपको एडमिन का संदेश मिलेगा, फिर आप मुझसे चैट कर सकते हैं। मैं हर सवाल का जवाब तो नहीं दे पाऊँगी, लेकिन आपके संदेश को एडमिन तक पहुँचाकर सही उत्तर दिलवा सकती हूँ।", 0.7);
+    
+    // Hide lock card and show main grid
+    lockCard.style.display = 'none';
+    mainGrid.style.display = 'block';
+    
+    // Show today's admin message
+    displayDailyAdmin();
+    
+  } else {
+    speak("गलत पासवर्ड, कृपया पुनः प्रयास करें", 0.7);
+    showToast("Wrong password");
+    unlockInput.value = '';
+    unlockInput.focus();
+    
+    // Shake animation for wrong password
+    lockCard.animate([
+      { transform: 'translateX(-6px)' },
+      { transform: 'translateX(6px)' },
+      { transform: 'translateX(0)' }
+    ], { duration: 380 });
+  }
+}
+
+/* =========================
+   Admin daily message logic (code-only)
+   ========================= */
+function getDailyAdminIndex() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = (today.getMonth() + 1).toString().padStart(2, '0');
+  const day = today.getDate().toString().padStart(2, '0');
+  const dateKey = `${year}-${month}-${day}`;
+  
+  // Check for override
+  if (ADMIN_DATE_OVERRIDES[dateKey] !== undefined) {
+    return ADMIN_DATE_OVERRIDES[dateKey] % ADMIN_MESSAGES.length;
+  }
+  
+  // Deterministic rotation based on date
+  const numeric = Number(`${year}${month}${day}`);
+  return numeric % ADMIN_MESSAGES.length;
+}
+
+function displayDailyAdmin() {
+  const index = getDailyAdminIndex();
+  const message = ADMIN_MESSAGES[index] || "कोई संदेश उपलब्ध नहीं।";
+  const messageElement = document.getElementById('adminMessage');
+  const timeElement = document.getElementById('adminTime');
+  
+  // Replace \n with <br> for HTML display
+  const formattedMessage = message.replace(/\n/g, '<br>');
+  messageElement.innerHTML = formattedMessage;
+  
+  // Format current date and time
+  const now = new Date();
+  const options = { 
+    day: 'numeric', 
+    month: 'long', 
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  };
+  timeElement.textContent = now.toLocaleString('hi-IN', options);
+  
+  // Speak admin message after a delay
+  setTimeout(() => {
+    speak("Admin संदेश: " + message, 0.7);
+  }, 1500);
+}
+
+/* =========================
+   Minimize toggles
+   ========================= */
+document.querySelectorAll('.minBtn').forEach(button => {
+  button.addEventListener('click', function() {
+    const panelType = this.getAttribute('data-toggle'); // admin, user, or media
+    const panel = document.getElementById(panelType + 'Panel');
+    
+    if (panel.classList.contains('minimized')) {
+      panel.classList.remove('minimized');
+      this.textContent = '–';
+    } else {
+      panel.classList.add('minimized');
+      this.textContent = '+';
+    }
+  });
+});
+
+/* =========================
+   Chat: user messages (localStorage)
+   ========================= */
+const chatWindow = document.getElementById('chatWindow');
+const userInput = document.getElementById('userInput');
+const sendUser = document.getElementById('sendUser');
+const savedArea = document.getElementById('savedArea');
+
+function getUserMessages() {
+  try {
+    const messages = localStorage.getItem('priyanka_user_v2');
+    return messages ? JSON.parse(messages) : [];
+  } catch (error) {
+    console.error("Error reading messages from localStorage:", error);
+    return [];
+  }
+}
+
+function saveUserMessages(messages) {
+  try {
+    localStorage.setItem('priyanka_user_v2', JSON.stringify(messages));
+  } catch (error) {
+    console.error("Error saving messages to localStorage:", error);
+  }
+}
+
+function renderSavedMessages() {
+  const messages = getUserMessages();
+  
+  if (messages.length === 0) {
+    savedArea.innerHTML = "<div class='muted'>No saved messages.</div>";
+    return;
+  }
+  
+  const messagesHtml = messages.map(message => `
+    <div style="padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px;">
+      <div style="font-size:14px">${escapeHtml(message.text)}</div>
+      <div class="muted">${message.time}</div>
+    </div>
+  `).join('');
+  
+  savedArea.innerHTML = messagesHtml;
+}
+
+function addChatMessage(sender, text) {
+  const messageRow = document.createElement('div');
+  messageRow.className = 'chatRow ' + (sender === 'user' ? 'user' : 'assistant');
+  
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble ' + (sender === 'user' ? 'user' : 'assistant');
+  bubble.textContent = text;
+  
+  messageRow.appendChild(bubble);
+  chatWindow.appendChild(messageRow);
+  
+  // Scroll to the bottom
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function assistantReply(userText) {
+  const text = userText.toLowerCase();
+  
+  if (text.includes('hello') || text.includes('hi') || text.includes('namaste')) {
+    return "हैलो! मैं आपकी कैसे मदद करूँ? ❤️";
+  }
+  
+  if (text.includes('pyar') || text.includes('love') || text.includes('❤️') || text.includes('pyaar')) {
+    return "आप बेहद खास हो — मैं हमेशा साथ हूँ ❤️";
+  }
+  
+  if (text.includes('photo') || text.includes('picture') || text.includes('image')) {
+    return "Media में photo URL डालकर Show photo दबाएँ।";
+  }
+  
+  if (text.includes('video') || text.includes('movie') || text.includes('film')) {
+    return "Media में video URL डालकर Play video दबाएँ।";
+  }
+  
+  if (text.includes('thanks') || text.includes('thank you') || text.includes('dhanyavad') || text.includes('shukriya')) {
+    return "आपका स्वागत है! हमेशा आपकी सेवा में ❤️";
+  }
+  
+  if (text.includes('help') || text.includes('madad') || text.includes('sahayata')) {
+    return "मैं आपकी कैसे मदद कर सकती हूँ? आप अपनी बात मुझे बताएं, मैं एडमिन तक पहुँचाने में मदद करूँगी।";
+  }
+  
+  return "मैंने आपकी बात सुनी: \"" + userText + "\" — बताइए और क्या चाहिए?";
+}
+
+sendUser.addEventListener('click', function() {
+  const message = userInput.value.trim();
+  
+  if (!message) {
+    speak("कृपया संदेश लिखें", 0.7);
+    showToast("Enter a message");
+    userInput.focus();
+    return;
+  }
+  
+  // Add user message to chat
+  addChatMessage('user', message);
+  
+  // Save message
+  const messages = getUserMessages();
+  const now = new Date();
+  const timeString = now.toLocaleString('hi-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  
+  messages.push({
+    text: message,
+    time: timeString
+  });
+  
+  saveUserMessages(messages);
+  renderSavedMessages();
+  
+  // Get and display assistant reply
+  const reply = assistantReply(message);
+  
+  setTimeout(() => {
+    addChatMessage('assistant', reply);
+    speak(reply, 0.7);
+  }, 600);
+  
+  // Clear input and refocus
+  userInput.value = '';
+  userInput.focus();
+});
+
+// Enter key support for chat (but allow Shift+Enter for new line)
+userInput.addEventListener('keypress', function(event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    sendUser.click();
+  }
+});
+
+// Clear chat button
+document.getElementById('clearChatBtn').addEventListener('click', function() {
+  chatWindow.innerHTML = '';
+  speak("Chat साफ़ हो गया", 0.7);
+  showToast("Chat cleared");
+});
+
+// Download messages button
+document.getElementById('downloadUser').addEventListener('click', function() {
+  const messages = getUserMessages();
+  const data = JSON.stringify(messages, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'user-messages.json';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  URL.revokeObjectURL(url);
+  
+  speak("Saved messages डाउनलोड हो रहे हैं", 0.7);
+  showToast("Messages downloaded");
+});
+
+// Show saved messages button
+document.getElementById('showSavedBtn').addEventListener('click', function() {
+  renderSavedMessages();
+  speak("Saved messages दिखाए जा रहे हैं", 0.7);
+  showToast("Saved messages shown");
+});
+
+// Initial render of saved messages
+renderSavedMessages();
+
+/* =========================
+   Media loading
+   ========================= */
+const mediaPreview = document.getElementById('mediaPreview');
+
+document.getElementById('loadMediaBtn').addEventListener('click', function() {
+  const url = document.getElementById('mediaUrl').value.trim();
+  
+  if (!url) {
+    speak("कृपया media url डालें", 0.7);
+    showToast("Enter URL");
+    return;
+  }
+  
+  loadMedia(url);
+});
+
+function loadMedia(url) {
+  // YouTube video
+  if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    let videoId = '';
+    
+    if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1].split(/[?&]/)[0];
+    } else if (url.includes('v=')) {
+      videoId = url.split('v=')[1].split('&')[0];
+    }
+    
+    if (videoId) {
+      mediaPreview.innerHTML = `
+        <iframe 
+          width="100%" 
+          height="260" 
+          src="https://www.youtube.com/embed/${videoId}" 
+          frameborder="0" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+          allowfullscreen>
+        </iframe>
+      `;
+      speak("YouTube video लोड हो गया", 0.7);
+      showToast("YouTube loaded");
+      return;
+    }
+  }
+  
+  // Video files
+  if (/\.mp4|\.webm|\.ogg/i.test(url)) {
+    mediaPreview.innerHTML = `
+      <video controls style="width:100%;max-height:320px;">
+        <source src="${url}" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    `;
+    speak("Video लोड हो गया", 0.7);
+    showToast("Video loaded");
+    return;
+  }
+  
+  // Audio files
+  if (/\.mp3|\.wav|\.m4a|\.ogg|audio/i.test(url)) {
+    mediaPreview.innerHTML = `
+      <audio controls style="width:100%;">
+        <source src="${url}" type="audio/mpeg">
+        Your browser does not support the audio element.
+      </audio>
+    `;
+    speak("Audio लोड हो गया", 0.7);
+    showToast("Audio loaded");
+    return;
+  }
+  
+  // Image files
+  if (/\.jpg|\.jpeg|\.png|\.gif|\.svg|\.webp/i.test(url)) {
+    mediaPreview.innerHTML = `
+      <img 
+        src="${url}" 
+        alt="Loaded media" 
+        style="width:100%;height:auto;display:block;max-height:320px;border-radius:8px;"
+        onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'muted\\'>Failed to load image</div>';"
+      >
+    `;
+    speak("Image लोड हो गया", 0.7);
+    showToast("Image loaded");
+    return;
+  }
+  
+  // Default fallback
+  mediaPreview.innerHTML = `
+    <div style="padding:12px;text-align:center;">
+      Preview not supported for this URL.<br>
+      <a href="${url}" target="_blank" style="color:var(--accent3);text-decoration:none;">Open link in new tab</a>
+    </div>
+  `;
+  speak("Link लोड हो गया, लेकिन preview उपलब्ध नहीं है", 0.7);
+  showToast("Link loaded (no preview)");
+}
+
+// Media control buttons
+document.getElementById('playAudioBtn').addEventListener('click', function() {
+  const audio = mediaPreview.querySelector('audio');
+  if (audio) {
+    audio.play();
+    speak("Audio चल रहा है", 0.7);
+    showToast("Audio playing");
+  } else {
+    speak("No audio loaded to play", 0.7);
+    showToast("No audio to play");
+  }
+});
+
+document.getElementById('playVideoBtn').addEventListener('click', function() {
+  const video = mediaPreview.querySelector('video');
+  if (video) {
+    video.play();
+    speak("Video चल रहा है", 0.7);
+    showToast("Video playing");
+  } else {
+    speak("No video loaded to play", 0.7);
+    showToast("No video to play");
+  }
+});
+
+document.getElementById('showPhotoBtn').addEventListener('click', function() {
+  const image = mediaPreview.querySelector('img');
+  if (image) {
+    speak("Photo preview दिख रहा है", 0.7);
+    showToast("Photo preview");
+  } else {
+    speak("No image loaded to show", 0.7);
+    showToast("No image to show");
+  }
+});
+
+/* Voice guide */
+document.getElementById('voiceGuide').addEventListener('click', function() {
+  const guide = "यह Priyanka assistant है। सबसे पहले लॉक खुलना चाहिए। Admin Message readonly है और हर दिन का संदेश दिखेगा। User Chat में message भेजें और ❤ दबाएँ। Media box में URL डालकर Load करें।";
+  speak(guide, 0.7);
+  showToast("Guide चलाया गया");
+});
+
+/* =========================
+   Initialize the application
+   ========================= */
+document.addEventListener('DOMContentLoaded', function() {
+  // Auto-focus on password input
+  unlockInput.focus();
+  
+  // Initialize TTS voices if available
+  if ('speechSynthesis' in window) {
+    // Load voices
+    setTimeout(function() {
+      const voices = speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        console.log("TTS voices loaded:", voices.length);
+      }
+    }, 500);
+    
+    // Some browsers need this to properly load voices
+    speechSynthesis.getVoices();
+  }
+  
+  // Welcome message (silent)
+  console.log("Priyanka Assistant loaded. Please enter password to unlock.");
+});/* =========================
+   CONFIGURATION (EDIT HERE)
+   ========================= */
+
+/* Lock password — change here to update site password.
+   This is the single place to change password (edit index.html on GitHub). */
+const ADMIN_PASSWORD = "DTYPL5133"; // ← change this value in code to update password
+
+/* Admin messages (code-only): keep array of messages.
+   System will pick a message daily (based on date) — daily rotation.
+   You can add as many messages as you want. These are read-only in UI. */
+const ADMIN_MESSAGES = [
+  " लाइफ मे कुछ अच्छा करो यार ",
+  "मुझे ऐसा लगता है कि तुम लोगों को लगता है कि मैं किसी बात पर ज़िद कर बैठूँगा — कि मैं कहूँगा कि मुझसे शादी करो या कोई और बात जिस पर मैं अड़ जाऊँ, चाहे कुछ भी हो जाए, चाहे बदनामी ही क्यों न हो जाए।\n\nअरे यार, मेरे पास भी अपना स्वाभिमान है, मुझे अपनी इज़्ज़त की भी चिंता होती है — कि क्या करने से मेरी इज़्ज़त घटेगी, क्या करने से मुझे बदनामी होगी।\n\nतुम कौन होते हो मेरी जाति पर या मेरे फैसलों पर सवाल उठाने वाले?\n\nमुझे अपनी जाति का भी मान है, और मैं कोई भागने वाला या शादी से डरने वाला इंसान नहीं हूँ।\n\nलेकिन अगर कोई मुझे जलाएगा, तड़पाएगा, उलझाकर रखेगा, मेरी भावनाओं का मज़ाक बनाएगा —\n\nतो मुझे दिक्कत तो होगी ही।\n\nइसके लिए तो मैं लड़ूँगा ही, गुस्सा भी आएगा — मेरे पास भी दिल-दिमाग है, और मुझे पता है कि क्या सही है और क्या ग़लत।\n\nतुम अगर सही से बोलोगे, मार्गदर्शन दोगे, बात को महत्व दोगे —\n\nतो मैं समझूँगा।\n\nवरना मुझे लगता है कि कोई मुझे जान-बूझकर जला रहा है, और मेरी बात की कोई value ही नहीं है।\n\nअगर तुम धोखा देने की सोच भी रखोगे,\n\nतो फिर तुम्हें मेरे अंदर वही मिलेगा, जैसा इरादा तुम मेरे लिए रखोगे।\n\nऔर कुछ कहने की ज़रूरत नहीं।",
+  "मधुर शब्द बाँटो, प्यार पाओ।",
+  "छोटे छोटे कदम बड़े बदलाव लाते हैं।",
+  "आज एक मुस्कान किसी का दिन बना सकती है — मुस्कुराओ! ❤️",
+  "सिकंदर बनो पर दिल नरम रखो।",
+  "हर दिन एक नया मौका है — कुछ अच्छा करें।"
+];
+
+/* Optional: custom date-specific overrides (YYYY-MM-DD -> message index)
+   If you want a specific message for a date, add here:
+   "2025-12-25": 3   // will pick ADMIN_MESSAGES[3]
+*/
+const ADMIN_DATE_OVERRIDES = {
+  // "2025-12-25": 4
+};
+
+/* =========================
+   Helpers: TTS, toast, explain
+   ========================= */
+let isSpeaking = false;
+let currentUtterance = null;
+
+function speak(text, rate = 0.8, pitch = 1.0, volume = 1.0) {
+  if (!('speechSynthesis' in window)) {
+    console.warn("Speech synthesis not supported");
+    return;
+  }
+  
+  try {
+    // Stop any ongoing speech
+    if (isSpeaking) {
+      speechSynthesis.cancel();
+    }
+    
+    const utterance = new SpeechSynthesisUtterance(String(text));
+    currentUtterance = utterance;
+    
+    // Get available voices
+    const voices = speechSynthesis.getVoices();
+    
+    // Try to find a Hindi voice first, then English, then any voice
+    let voice = voices.find(v => /hi|hindi/i.test(v.lang)) || 
+                voices.find(v => /en/i.test(v.lang)) || 
+                voices[0];
+    
+    if (voice) {
+      utterance.voice = voice;
+      utterance.lang = voice.lang;
+    } else {
+      utterance.lang = 'hi-IN';
+    }
+    
+    // Set speech parameters
+    utterance.rate = rate; // Slower speed for clarity
+    utterance.pitch = pitch;
+    utterance.volume = volume;
+    
+    // Event handlers
+    utterance.onstart = function() {
+      isSpeaking = true;
+    };
+    
+    utterance.onend = function() {
+      isSpeaking = false;
+      currentUtterance = null;
+    };
+    
+    utterance.onerror = function(event) {
+      console.error("Speech synthesis error:", event);
+      isSpeaking = false;
+      currentUtterance = null;
+    };
+    
+    // Speak the text
+    speechSynthesis.speak(utterance);
+    
+  } catch (error) {
+    console.error("Error in speak function:", error);
+    isSpeaking = false;
+    currentUtterance = null;
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  
+  // Clear any existing timeout
+  if (t._timeout) {
+    clearTimeout(t._timeout);
+  }
+  
+  // Hide toast after 3 seconds
+  t._timeout = setTimeout(() => {
+    t.style.opacity = '0';
+  }, 3000);
+}
+
+/* Tap-to-explain: data-explain attribute */
+document.addEventListener('click', function(event) {
+  const element = event.target.closest('[data-explain]');
+  if (element) {
+    const text = element.getAttribute('data-explain');
+    if (text) {
+      speak(text);
+      showToast(text);
+    }
+  }
+});
+
+/* =========================
+   Lock behavior
+   ========================= */
+const lockCard = document.getElementById('lockCard');
+const unlockInput = document.getElementById('unlockInput');
+const unlockBtn = document.getElementById('unlockBtn');
+const mainGrid = document.getElementById('mainGrid');
+
+unlockBtn.addEventListener('click', function() {
+  attemptUnlock(unlockInput.value.trim());
+});
+
+// Enter key support for password input
+unlockInput.addEventListener('keypress', function(event) {
+  if (event.key === 'Enter') {
+    attemptUnlock(unlockInput.value.trim());
+  }
+});
+
+function attemptUnlock(password) {
+  if (!password) {
+    speak("कृपया पासवर्ड भरें", 0.7);
+    showToast("Password required");
+    unlockInput.focus();
+    return;
+  }
+  
+  if (password === ADMIN_PASSWORD) {
+    speak("स्वागत है, साइट खुल रही है। यह साइट विशेष लोगों के लिए है, आप यहाँ तक पहुँच गए हैं, आपका दिल से स्वागत है! सबसे पहले आपको एडमिन का संदेश मिलेगा, फिर आप मुझसे चैट कर सकते हैं। मैं हर सवाल का जवाब तो नहीं दे पाऊँगी, लेकिन आपके संदेश को एडमिन तक पहुँचाकर सही उत्तर दिलवा सकती हूँ।", 0.7);
+    
+    // Hide lock card and show main grid
+    lockCard.style.display = 'none';
+    mainGrid.style.display = 'block';
+    
+    // Show today's admin message
+    displayDailyAdmin();
+    
+  } else {
+    speak("गलत पासवर्ड, कृपया पुनः प्रयास करें", 0.7);
+    showToast("Wrong password");
+    unlockInput.value = '';
+    unlockInput.focus();
+    
+    // Shake animation for wrong password
+    lockCard.animate([
+      { transform: 'translateX(-6px)' },
+      { transform: 'translateX(6px)' },
+      { transform: 'translateX(0)' }
+    ], { duration: 380 });
+  }
+}
+
+/* =========================
+   Admin daily message logic (code-only)
+   ========================= */
+function getDailyAdminIndex() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = (today.getMonth() + 1).toString().padStart(2, '0');
+  const day = today.getDate().toString().padStart(2, '0');
+  const dateKey = `${year}-${month}-${day}`;
+  
+  // Check for override
+  if (ADMIN_DATE_OVERRIDES[dateKey] !== undefined) {
+    return ADMIN_DATE_OVERRIDES[dateKey] % ADMIN_MESSAGES.length;
+  }
+  
+  // Deterministic rotation based on date
+  const numeric = Number(`${year}${month}${day}`);
+  return numeric % ADMIN_MESSAGES.length;
+}
+
+function displayDailyAdmin() {
+  const index = getDailyAdminIndex();
+  const message = ADMIN_MESSAGES[index] || "कोई संदेश उपलब्ध नहीं।";
+  const messageElement = document.getElementById('adminMessage');
+  const timeElement = document.getElementById('adminTime');
+  
+  // Replace \n with <br> for HTML display
+  const formattedMessage = message.replace(/\n/g, '<br>');
+  messageElement.innerHTML = formattedMessage;
+  
+  // Format current date and time
+  const now = new Date();
+  const options = { 
+    day: 'numeric', 
+    month: 'long', 
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  };
+  timeElement.textContent = now.toLocaleString('hi-IN', options);
+  
+  // Speak admin message after a delay
+  setTimeout(() => {
+    speak("Admin संदेश: " + message, 0.7);
+  }, 1500);
+}
+
+/* =========================
+   Minimize toggles
+   ========================= */
+document.querySelectorAll('.minBtn').forEach(button => {
+  button.addEventListener('click', function() {
+    const panelType = this.getAttribute('data-toggle'); // admin, user, or media
+    const panel = document.getElementById(panelType + 'Panel');
+    
+    if (panel.classList.contains('minimized')) {
+      panel.classList.remove('minimized');
+      this.textContent = '–';
+    } else {
+      panel.classList.add('minimized');
+      this.textContent = '+';
+    }
+  });
+});
+
+/* =========================
+   Chat: user messages (localStorage)
+   ========================= */
+const chatWindow = document.getElementById('chatWindow');
+const userInput = document.getElementById('userInput');
+const sendUser = document.getElementById('sendUser');
+const savedArea = document.getElementById('savedArea');
+
+function getUserMessages() {
+  try {
+    const messages = localStorage.getItem('priyanka_user_v2');
+    return messages ? JSON.parse(messages) : [];
+  } catch (error) {
+    console.error("Error reading messages from localStorage:", error);
+    return [];
+  }
+}
+
+function saveUserMessages(messages) {
+  try {
+    localStorage.setItem('priyanka_user_v2', JSON.stringify(messages));
+  } catch (error) {
+    console.error("Error saving messages to localStorage:", error);
+  }
+}
+
+function renderSavedMessages() {
+  const messages = getUserMessages();
+  
+  if (messages.length === 0) {
+    savedArea.innerHTML = "<div class='muted'>No saved messages.</div>";
+    return;
+  }
+  
+  const messagesHtml = messages.map(message => `
+    <div style="padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px;">
+      <div style="font-size:14px">${escapeHtml(message.text)}</div>
+      <div class="muted">${message.time}</div>
+    </div>
+  `).join('');
+  
+  savedArea.innerHTML = messagesHtml;
+}
+
+function addChatMessage(sender, text) {
+  const messageRow = document.createElement('div');
+  messageRow.className = 'chatRow ' + (sender === 'user' ? 'user' : 'assistant');
+  
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble ' + (sender === 'user' ? 'user' : 'assistant');
+  bubble.textContent = text;
+  
+  messageRow.appendChild(bubble);
+  chatWindow.appendChild(messageRow);
+  
+  // Scroll to the bottom
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function assistantReply(userText) {
+  const text = userText.toLowerCase();
+  
+  if (text.includes('hello') || text.includes('hi') || text.includes('namaste')) {
+    return "हैलो! मैं आपकी कैसे मदद करूँ? ❤️";
+  }
+  
+  if (text.includes('pyar') || text.includes('love') || text.includes('❤️') || text.includes('pyaar')) {
+    return "आप बेहद खास हो — मैं हमेशा साथ हूँ ❤️";
+  }
+  
+  if (text.includes('photo') || text.includes('picture') || text.includes('image')) {
+    return "Media में photo URL डालकर Show photo दबाएँ।";
+  }
+  
+  if (text.includes('video') || text.includes('movie') || text.includes('film')) {
+    return "Media में video URL डालकर Play video दबाएँ।";
+  }
+  
+  if (text.includes('thanks') || text.includes('thank you') || text.includes('dhanyavad') || text.includes('shukriya')) {
+    return "आपका स्वागत है! हमेशा आपकी सेवा में ❤️";
+  }
+  
+  if (text.includes('help') || text.includes('madad') || text.includes('sahayata')) {
+    return "मैं आपकी कैसे मदद कर सकती हूँ? आप अपनी बात मुझे बताएं, मैं एडमिन तक पहुँचाने में मदद करूँगी।";
+  }
+  
+  return "मैंने आपकी बात सुनी: \"" + userText + "\" — बताइए और क्या चाहिए?";
+}
+
+sendUser.addEventListener('click', function() {
+  const message = userInput.value.trim();
+  
+  if (!message) {
+    speak("कृपया संदेश लिखें", 0.7);
+    showToast("Enter a message");
+    userInput.focus();
+    return;
+  }
+  
+  // Add user message to chat
+  addChatMessage('user', message);
+  
+  // Save message
+  const messages = getUserMessages();
+  const now = new Date();
+  const timeString = now.toLocaleString('hi-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  
+  messages.push({
+    text: message,
+    time: timeString
+  });
+  
+  saveUserMessages(messages);
+  renderSavedMessages();
+  
+  // Get and display assistant reply
+  const reply = assistantReply(message);
+  
+  setTimeout(() => {
+    addChatMessage('assistant', reply);
+    speak(reply, 0.7);
+  }, 600);
+  
+  // Clear input and refocus
+  userInput.value = '';
+  userInput.focus();
+});
+
+// Enter key support for chat (but allow Shift+Enter for new line)
+userInput.addEventListener('keypress', function(event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    sendUser.click();
+  }
+});
+
+// Clear chat button
+document.getElementById('clearChatBtn').addEventListener('click', function() {
+  chatWindow.innerHTML = '';
+  speak("Chat साफ़ हो गया", 0.7);
+  showToast("Chat cleared");
+});
+
+// Download messages button
+document.getElementById('downloadUser').addEventListener('click', function() {
+  const messages = getUserMessages();
+  const data = JSON.stringify(messages, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'user-messages.json';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  URL.revokeObjectURL(url);
+  
+  speak("Saved messages डाउनलोड हो रहे हैं", 0.7);
+  showToast("Messages downloaded");
+});
+
+// Show saved messages button
+document.getElementById('showSavedBtn').addEventListener('click', function() {
+  renderSavedMessages();
+  speak("Saved messages दिखाए जा रहे हैं", 0.7);
+  showToast("Saved messages shown");
+});
+
+// Initial render of saved messages
+renderSavedMessages();
+
+/* =========================
+   Media loading
+   ========================= */
+const mediaPreview = document.getElementById('mediaPreview');
+
+document.getElementById('loadMediaBtn').addEventListener('click', function() {
+  const url = document.getElementById('mediaUrl').value.trim();
+  
+  if (!url) {
+    speak("कृपया media url डालें", 0.7);
+    showToast("Enter URL");
+    return;
+  }
+  
+  loadMedia(url);
+});
+
+function loadMedia(url) {
+  // YouTube video
+  if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    let videoId = '';
+    
+    if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1].split(/[?&]/)[0];
+    } else if (url.includes('v=')) {
+      videoId = url.split('v=')[1].split('&')[0];
+    }
+    
+    if (videoId) {
+      mediaPreview.innerHTML = `
+        <iframe 
+          width="100%" 
+          height="260" 
+          src="https://www.youtube.com/embed/${videoId}" 
+          frameborder="0" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+          allowfullscreen>
+        </iframe>
+      `;
+      speak("YouTube video लोड हो गया", 0.7);
+      showToast("YouTube loaded");
+      return;
+    }
+  }
+  
+  // Video files
+  if (/\.mp4|\.webm|\.ogg/i.test(url)) {
+    mediaPreview.innerHTML = `
+      <video controls style="width:100%;max-height:320px;">
+        <source src="${url}" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    `;
+    speak("Video लोड हो गया", 0.7);
+    showToast("Video loaded");
+    return;
+  }
+  
+  // Audio files
+  if (/\.mp3|\.wav|\.m4a|\.ogg|audio/i.test(url)) {
+    mediaPreview.innerHTML = `
+      <audio controls style="width:100%;">
+        <source src="${url}" type="audio/mpeg">
+        Your browser does not support the audio element.
+      </audio>
+    `;
+    speak("Audio लोड हो गया", 0.7);
+    showToast("Audio loaded");
+    return;
+  }
+  
+  // Image files
+  if (/\.jpg|\.jpeg|\.png|\.gif|\.svg|\.webp/i.test(url)) {
+    mediaPreview.innerHTML = `
+      <img 
+        src="${url}" 
+        alt="Loaded media" 
+        style="width:100%;height:auto;display:block;max-height:320px;border-radius:8px;"
+        onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'muted\\'>Failed to load image</div>';"
+      >
+    `;
+    speak("Image लोड हो गया", 0.7);
+    showToast("Image loaded");
+    return;
+  }
+  
+  // Default fallback
+  mediaPreview.innerHTML = `
+    <div style="padding:12px;text-align:center;">
+      Preview not supported for this URL.<br>
+      <a href="${url}" target="_blank" style="color:var(--accent3);text-decoration:none;">Open link in new tab</a>
+    </div>
+  `;
+  speak("Link लोड हो गया, लेकिन preview उपलब्ध नहीं है", 0.7);
+  showToast("Link loaded (no preview)");
+}
+
+// Media control buttons
+document.getElementById('playAudioBtn').addEventListener('click', function() {
+  const audio = mediaPreview.querySelector('audio');
+  if (audio) {
+    audio.play();
+    speak("Audio चल रहा है", 0.7);
+    showToast("Audio playing");
+  } else {
+    speak("No audio loaded to play", 0.7);
+    showToast("No audio to play");
+  }
+});
+
+document.getElementById('playVideoBtn').addEventListener('click', function() {
+  const video = mediaPreview.querySelector('video');
+  if (video) {
+    video.play();
+    speak("Video चल रहा है", 0.7);
+    showToast("Video playing");
+  } else {
+    speak("No video loaded to play", 0.7);
+    showToast("No video to play");
+  }
+});
+
+document.getElementById('showPhotoBtn').addEventListener('click', function() {
+  const image = mediaPreview.querySelector('img');
+  if (image) {
+    speak("Photo preview दिख रहा है", 0.7);
+    showToast("Photo preview");
+  } else {
+    speak("No image loaded to show", 0.7);
+    showToast("No image to show");
+  }
+});
+
+/* Voice guide */
+document.getElementById('voiceGuide').addEventListener('click', function() {
+  const guide = "यह Priyanka assistant है। सबसे पहले लॉक खुलना चाहिए। Admin Message readonly है और हर दिन का संदेश दिखेगा। User Chat में message भेजें और ❤ दबाएँ। Media box में URL डालकर Load करें।";
+  speak(guide, 0.7);
+  showToast("Guide चलाया गया");
+});
+
+/* =========================
+   Initialize the application
+   ========================= */
+document.addEventListener('DOMContentLoaded', function() {
+  // Auto-focus on password input
+  unlockInput.focus();
+  
+  // Initialize TTS voices if available
+  if ('speechSynthesis' in window) {
+    // Load voices
+    setTimeout(function() {
+      const voices = speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        console.log("TTS voices loaded:", voices.length);
+      }
+    }, 500);
+    
+    // Some browsers need this to properly load voices
+    speechSynthesis.getVoices();
+  }
+  
+  // Welcome message (silent)
+  console.log("Priyanka Assistant loaded. Please enter password to unlock.");
+});/* =========================
+   CONFIGURATION (EDIT HERE)
+   ========================= */
+
+/* Lock password — change here to update site password.
+   This is the single place to change password (edit index.html on GitHub). */
+const ADMIN_PASSWORD = "DTYPL5133"; // ← change this value in code to update password
+
+/* Admin messages (code-only): keep array of messages.
+   System will pick a message daily (based on date) — daily rotation.
+   You can add as many messages as you want. These are read-only in UI. */
+const ADMIN_MESSAGES = [
+  " लाइफ मे कुछ अच्छा करो यार ",
+  "मुझे ऐसा लगता है कि तुम लोगों को लगता है कि मैं किसी बात पर ज़िद कर बैठूँगा — कि मैं कहूँगा कि मुझसे शादी करो या कोई और बात जिस पर मैं अड़ जाऊँ, चाहे कुछ भी हो जाए, चाहे बदनामी ही क्यों न हो जाए।\n\nअरे यार, मेरे पास भी अपना स्वाभिमान है, मुझे अपनी इज़्ज़त की भी चिंता होती है — कि क्या करने से मेरी इज़्ज़त घटेगी, क्या करने से मुझे बदनामी होगी।\n\nतुम कौन होते हो मेरी जाति पर या मेरे फैसलों पर सवाल उठाने वाले?\n\nमुझे अपनी जाति का भी मान है, और मैं कोई भागने वाला या शादी से डरने वाला इंसान नहीं हूँ।\n\nलेकिन अगर कोई मुझे जलाएगा, तड़पाएगा, उलझाकर रखेगा, मेरी भावनाओं का मज़ाक बनाएगा —\n\nतो मुझे दिक्कत तो होगी ही।\n\nइसके लिए तो मैं लड़ूँगा ही, गुस्सा भी आएगा — मेरे पास भी दिल-दिमाग है, और मुझे पता है कि क्या सही है और क्या ग़लत।\n\nतुम अगर सही से बोलोगे, मार्गदर्शन दोगे, बात को महत्व दोगे —\n\nतो मैं समझूँगा।\n\nवरना मुझे लगता है कि कोई मुझे जान-बूझकर जला रहा है, और मेरी बात की कोई value ही नहीं है।\n\nअगर तुम धोखा देने की सोच भी रखोगे,\n\nतो फिर तुम्हें मेरे अंदर वही मिलेगा, जैसा इरादा तुम मेरे लिए रखोगे।\n\nऔर कुछ कहने की ज़रूरत नहीं।",
+  "मधुर शब्द बाँटो, प्यार पाओ।",
+  "छोटे छोटे कदम बड़े बदलाव लाते हैं।",
+  "आज एक मुस्कान किसी का दिन बना सकती है — मुस्कुराओ! ❤️",
+  "सिकंदर बनो पर दिल नरम रखो।",
+  "हर दिन एक नया मौका है — कुछ अच्छा करें।"
+];
+
+/* Optional: custom date-specific overrides (YYYY-MM-DD -> message index)
+   If you want a specific message for a date, add here:
+   "2025-12-25": 3   // will pick ADMIN_MESSAGES[3]
+*/
+const ADMIN_DATE_OVERRIDES = {
+  // "2025-12-25": 4
+};
+
+/* =========================
+   Helpers: TTS, toast, explain
+   ========================= */
+let isSpeaking = false;
+let currentUtterance = null;
+
+function speak(text, rate = 0.8, pitch = 1.0, volume = 1.0) {
+  if (!('speechSynthesis' in window)) {
+    console.warn("Speech synthesis not supported");
+    return;
+  }
+  
+  try {
+    // Stop any ongoing speech
+    if (isSpeaking) {
+      speechSynthesis.cancel();
+    }
+    
+    const utterance = new SpeechSynthesisUtterance(String(text));
+    currentUtterance = utterance;
+    
+    // Get available voices
+    const voices = speechSynthesis.getVoices();
+    
+    // Try to find a Hindi voice first, then English, then any voice
+    let voice = voices.find(v => /hi|hindi/i.test(v.lang)) || 
+                voices.find(v => /en/i.test(v.lang)) || 
+                voices[0];
+    
+    if (voice) {
+      utterance.voice = voice;
+      utterance.lang = voice.lang;
+    } else {
+      utterance.lang = 'hi-IN';
+    }
+    
+    // Set speech parameters
+    utterance.rate = rate; // Slower speed for clarity
+    utterance.pitch = pitch;
+    utterance.volume = volume;
+    
+    // Event handlers
+    utterance.onstart = function() {
+      isSpeaking = true;
+    };
+    
+    utterance.onend = function() {
+      isSpeaking = false;
+      currentUtterance = null;
+    };
+    
+    utterance.onerror = function(event) {
+      console.error("Speech synthesis error:", event);
+      isSpeaking = false;
+      currentUtterance = null;
+    };
+    
+    // Speak the text
+    speechSynthesis.speak(utterance);
+    
+  } catch (error) {
+    console.error("Error in speak function:", error);
+    isSpeaking = false;
+    currentUtterance = null;
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.opacity = '1';
+  
+  // Clear any existing timeout
+  if (t._timeout) {
+    clearTimeout(t._timeout);
+  }
+  
+  // Hide toast after 3 seconds
+  t._timeout = setTimeout(() => {
+    t.style.opacity = '0';
+  }, 3000);
+}
+
+/* Tap-to-explain: data-explain attribute */
+document.addEventListener('click', function(event) {
+  const element = event.target.closest('[data-explain]');
+  if (element) {
+    const text = element.getAttribute('data-explain');
+    if (text) {
+      speak(text);
+      showToast(text);
+    }
+  }
+});
+
+/* =========================
+   Lock behavior
+   ========================= */
+const lockCard = document.getElementById('lockCard');
+const unlockInput = document.getElementById('unlockInput');
+const unlockBtn = document.getElementById('unlockBtn');
+const mainGrid = document.getElementById('mainGrid');
+
+unlockBtn.addEventListener('click', function() {
+  attemptUnlock(unlockInput.value.trim());
+});
+
+// Enter key support for password input
+unlockInput.addEventListener('keypress', function(event) {
+  if (event.key === 'Enter') {
+    attemptUnlock(unlockInput.value.trim());
+  }
+});
+
+function attemptUnlock(password) {
+  if (!password) {
+    speak("कृपया पासवर्ड भरें", 0.7);
+    showToast("Password required");
+    unlockInput.focus();
+    return;
+  }
+  
+  if (password === ADMIN_PASSWORD) {
+    speak("स्वागत है, साइट खुल रही है। यह साइट विशेष लोगों के लिए है, आप यहाँ तक पहुँच गए हैं, आपका दिल से स्वागत है! सबसे पहले आपको एडमिन का संदेश मिलेगा, फिर आप मुझसे चैट कर सकते हैं। मैं हर सवाल का जवाब तो नहीं दे पाऊँगी, लेकिन आपके संदेश को एडमिन तक पहुँचाकर सही उत्तर दिलवा सकती हूँ।", 0.7);
+    
+    // Hide lock card and show main grid
+    lockCard.style.display = 'none';
+    mainGrid.style.display = 'block';
+    
+    // Show today's admin message
+    displayDailyAdmin();
+    
+  } else {
+    speak("गलत पासवर्ड, कृपया पुनः प्रयास करें", 0.7);
+    showToast("Wrong password");
+    unlockInput.value = '';
+    unlockInput.focus();
+    
+    // Shake animation for wrong password
+    lockCard.animate([
+      { transform: 'translateX(-6px)' },
+      { transform: 'translateX(6px)' },
+      { transform: 'translateX(0)' }
+    ], { duration: 380 });
+  }
+}
+
+/* =========================
+   Admin daily message logic (code-only)
+   ========================= */
+function getDailyAdminIndex() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = (today.getMonth() + 1).toString().padStart(2, '0');
+  const day = today.getDate().toString().padStart(2, '0');
+  const dateKey = `${year}-${month}-${day}`;
+  
+  // Check for override
+  if (ADMIN_DATE_OVERRIDES[dateKey] !== undefined) {
+    return ADMIN_DATE_OVERRIDES[dateKey] % ADMIN_MESSAGES.length;
+  }
+  
+  // Deterministic rotation based on date
+  const numeric = Number(`${year}${month}${day}`);
+  return numeric % ADMIN_MESSAGES.length;
+}
+
+function displayDailyAdmin() {
+  const index = getDailyAdminIndex();
+  const message = ADMIN_MESSAGES[index] || "कोई संदेश उपलब्ध नहीं।";
+  const messageElement = document.getElementById('adminMessage');
+  const timeElement = document.getElementById('adminTime');
+  
+  // Replace \n with <br> for HTML display
+  const formattedMessage = message.replace(/\n/g, '<br>');
+  messageElement.innerHTML = formattedMessage;
+  
+  // Format current date and time
+  const now = new Date();
+  const options = { 
+    day: 'numeric', 
+    month: 'long', 
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  };
+  timeElement.textContent = now.toLocaleString('hi-IN', options);
+  
+  // Speak admin message after a delay
+  setTimeout(() => {
+    speak("Admin संदेश: " + message, 0.7);
+  }, 1500);
+}
+
+/* =========================
+   Minimize toggles
+   ========================= */
+document.querySelectorAll('.minBtn').forEach(button => {
+  button.addEventListener('click', function() {
+    const panelType = this.getAttribute('data-toggle'); // admin, user, or media
+    const panel = document.getElementById(panelType + 'Panel');
+    
+    if (panel.classList.contains('minimized')) {
+      panel.classList.remove('minimized');
+      this.textContent = '–';
+    } else {
+      panel.classList.add('minimized');
+      this.textContent = '+';
+    }
+  });
+});
+
+/* =========================
+   Chat: user messages (localStorage)
+   ========================= */
+const chatWindow = document.getElementById('chatWindow');
+const userInput = document.getElementById('userInput');
+const sendUser = document.getElementById('sendUser');
+const savedArea = document.getElementById('savedArea');
+
+function getUserMessages() {
+  try {
+    const messages = localStorage.getItem('priyanka_user_v2');
+    return messages ? JSON.parse(messages) : [];
+  } catch (error) {
+    console.error("Error reading messages from localStorage:", error);
+    return [];
+  }
+}
+
+function saveUserMessages(messages) {
+  try {
+    localStorage.setItem('priyanka_user_v2', JSON.stringify(messages));
+  } catch (error) {
+    console.error("Error saving messages to localStorage:", error);
+  }
+}
+
+function renderSavedMessages() {
+  const messages = getUserMessages();
+  
+  if (messages.length === 0) {
+    savedArea.innerHTML = "<div class='muted'>No saved messages.</div>";
+    return;
+  }
+  
+  const messagesHtml = messages.map(message => `
+    <div style="padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);margin-bottom:8px;">
+      <div style="font-size:14px">${escapeHtml(message.text)}</div>
+      <div class="muted">${message.time}</div>
+    </div>
+  `).join('');
+  
+  savedArea.innerHTML = messagesHtml;
+}
+
+function addChatMessage(sender, text) {
+  const messageRow = document.createElement('div');
+  messageRow.className = 'chatRow ' + (sender === 'user' ? 'user' : 'assistant');
+  
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble ' + (sender === 'user' ? 'user' : 'assistant');
+  bubble.textContent = text;
+  
+  messageRow.appendChild(bubble);
+  chatWindow.appendChild(messageRow);
+  
+  // Scroll to the bottom
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function assistantReply(userText) {
+  const text = userText.toLowerCase();
+  
+  if (text.includes('hello') || text.includes('hi') || text.includes('namaste')) {
+    return "हैलो! मैं आपकी कैसे मदद करूँ? ❤️";
+  }
+  
+  if (text.includes('pyar') || text.includes('love') || text.includes('❤️') || text.includes('pyaar')) {
+    return "आप बेहद खास हो — मैं हमेशा साथ हूँ ❤️";
+  }
+  
+  if (text.includes('photo') || text.includes('picture') || text.includes('image')) {
+    return "Media में photo URL डालकर Show photo दबाएँ।";
+  }
+  
+  if (text.includes('video') || text.includes('movie') || text.includes('film')) {
+    return "Media में video URL डालकर Play video दबाएँ।";
+  }
+  
+  if (text.includes('thanks') || text.includes('thank you') || text.includes('dhanyavad') || text.includes('shukriya')) {
+    return "आपका स्वागत है! हमेशा आपकी सेवा में ❤️";
+  }
+  
+  if (text.includes('help') || text.includes('madad') || text.includes('sahayata')) {
+    return "मैं आपकी कैसे मदद कर सकती हूँ? आप अपनी बात मुझे बताएं, मैं एडमिन तक पहुँचाने में मदद करूँगी।";
+  }
+  
+  return "मैंने आपकी बात सुनी: \"" + userText + "\" — बताइए और क्या चाहिए?";
+}
+
+sendUser.addEventListener('click', function() {
+  const message = userInput.value.trim();
+  
+  if (!message) {
+    speak("कृपया संदेश लिखें", 0.7);
+    showToast("Enter a message");
+    userInput.focus();
+    return;
+  }
+  
+  // Add user message to chat
+  addChatMessage('user', message);
+  
+  // Save message
+  const messages = getUserMessages();
+  const now = new Date();
+  const timeString = now.toLocaleString('hi-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  
+  messages.push({
+    text: message,
+    time: timeString
+  });
+  
+  saveUserMessages(messages);
+  renderSavedMessages();
+  
+  // Get and display assistant reply
+  const reply = assistantReply(message);
+  
+  setTimeout(() => {
+    addChatMessage('assistant', reply);
+    speak(reply, 0.7);
+  }, 600);
+  
+  // Clear input and refocus
+  userInput.value = '';
+  userInput.focus();
+});
+
+// Enter key support for chat (but allow Shift+Enter for new line)
+userInput.addEventListener('keypress', function(event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    sendUser.click();
+  }
+});
+
+// Clear chat button
+document.getElementById('clearChatBtn').addEventListener('click', function() {
+  chatWindow.innerHTML = '';
+  speak("Chat साफ़ हो गया", 0.7);
+  showToast("Chat cleared");
+});
+
+// Download messages button
+document.getElementById('downloadUser').addEventListener('click', function() {
+  const messages = getUserMessages();
+  const data = JSON.stringify(messages, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'user-messages.json';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  URL.revokeObjectURL(url);
+  
+  speak("Saved messages डाउनलोड हो रहे हैं", 0.7);
+  showToast("Messages downloaded");
+});
+
+// Show saved messages button
+document.getElementById('showSavedBtn').addEventListener('click', function() {
+  renderSavedMessages();
+  speak("Saved messages दिखाए जा रहे हैं", 0.7);
+  showToast("Saved messages shown");
+});
+
+// Initial render of saved messages
+renderSavedMessages();
+
+/* =========================
+   Media loading
+   ========================= */
+const mediaPreview = document.getElementById('mediaPreview');
+
+document.getElementById('loadMediaBtn').addEventListener('click', function() {
+  const url = document.getElementById('mediaUrl').value.trim();
+  
+  if (!url) {
+    speak("कृपया media url डालें", 0.7);
+    showToast("Enter URL");
+    return;
+  }
+  
+  loadMedia(url);
+});
+
+function loadMedia(url) {
+  // YouTube video
+  if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    let videoId = '';
+    
+    if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1].split(/[?&]/)[0];
+    } else if (url.includes('v=')) {
+      videoId = url.split('v=')[1].split('&')[0];
+    }
+    
+    if (videoId) {
+      mediaPreview.innerHTML = `
+        <iframe 
+          width="100%" 
+          height="260" 
+          src="https://www.youtube.com/embed/${videoId}" 
+          frameborder="0" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+          allowfullscreen>
+        </iframe>
+      `;
+      speak("YouTube video लोड हो गया", 0.7);
+      showToast("YouTube loaded");
+      return;
+    }
+  }
+  
+  // Video files
+  if (/\.mp4|\.webm|\.ogg/i.test(url)) {
+    mediaPreview.innerHTML = `
+      <video controls style="width:100%;max-height:320px;">
+        <source src="${url}" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    `;
+    speak("Video लोड हो गया", 0.7);
+    showToast("Video loaded");
+    return;
+  }
+  
+  // Audio files
+  if (/\.mp3|\.wav|\.m4a|\.ogg|audio/i.test(url)) {
+    mediaPreview.innerHTML = `
+      <audio controls style="width:100%;">
+        <source src="${url}" type="audio/mpeg">
+        Your browser does not support the audio element.
+      </audio>
+    `;
+    speak("Audio लोड हो गया", 0.7);
+    showToast("Audio loaded");
+    return;
+  }
+  
+  // Image files
+  if (/\.jpg|\.jpeg|\.png|\.gif|\.svg|\.webp/i.test(url)) {
+    mediaPreview.innerHTML = `
+      <img 
+        src="${url}" 
+        alt="Loaded media" 
+        style="width:100%;height:auto;display:block;max-height:320px;border-radius:8px;"
+        onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'muted\\'>Failed to load image</div>';"
+      >
+    `;
+    speak("Image लोड हो गया", 0.7);
+    showToast("Image loaded");
+    return;
+  }
+  
+  // Default fallback
+  mediaPreview.innerHTML = `
+    <div style="padding:12px;text-align:center;">
+      Preview not supported for this URL.<br>
+      <a href="${url}" target="_blank" style="color:var(--accent3);text-decoration:none;">Open link in new tab</a>
+    </div>
+  `;
+  speak("Link लोड हो गया, लेकिन preview उपलब्ध नहीं है", 0.7);
+  showToast("Link loaded (no preview)");
+}
+
+// Media control buttons
+document.getElementById('playAudioBtn').addEventListener('click', function() {
+  const audio = mediaPreview.querySelector('audio');
+  if (audio) {
+    audio.play();
+    speak("Audio चल रहा है", 0.7);
+    showToast("Audio playing");
+  } else {
+    speak("No audio loaded to play", 0.7);
+    showToast("No audio to play");
+  }
+});
+
+document.getElementById('playVideoBtn').addEventListener('click', function() {
+  const video = mediaPreview.querySelector('video');
+  if (video) {
+    video.play();
+    speak("Video चल रहा है", 0.7);
+    showToast("Video playing");
+  } else {
+    speak("No video loaded to play", 0.7);
+    showToast("No video to play");
+  }
+});
+
+document.getElementById('showPhotoBtn').addEventListener('click', function() {
+  const image = mediaPreview.querySelector('img');
+  if (image) {
+    speak("Photo preview दिख रहा है", 0.7);
+    showToast("Photo preview");
+  } else {
+    speak("No image loaded to show", 0.7);
+    showToast("No image to show");
+  }
+});
+
+/* Voice guide */
+document.getElementById('voiceGuide').addEventListener('click', function() {
+  const guide = "यह Priyanka assistant है। सबसे पहले लॉक खुलना चाहिए। Admin Message readonly है और हर दिन का संदेश दिखेगा। User Chat में message भेजें और ❤ दबाएँ। Media box में URL डालकर Load करें।";
+  speak(guide, 0.7);
+  showToast("Guide चलाया गया");
+});
+
+/* =========================
+   Initialize the application
+   ========================= */
+document.addEventListener('DOMContentLoaded', function() {
+  // Auto-focus on password input
+  unlockInput.focus();
+  
+  // Initialize TTS voices if available
+  if ('speechSynthesis' in window) {
+    // Load voices
+    setTimeout(function() {
+      const voices = speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        console.log("TTS voices loaded:", voices.length);
+      }
+    }, 500);
+    
+    // Some browsers need this to properly load voices
+    speechSynthesis.getVoices();
+  }
+  
+  // Welcome message (silent)
+  console.log("Priyanka Assistant loaded. Please enter password to unlock.");
+});
